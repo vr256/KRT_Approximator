@@ -2,7 +2,8 @@ import customtkinter
 
 from menu import Sidebar, YSelector, YCalculator, MainTabview, \
                  SystemSolver, VectorView, PolynomView, AdditionalView, \
-                 InputView, init_app
+                 InputView
+from event import init_app_event
 
 customtkinter.set_appearance_mode("Light") 
 customtkinter.set_default_color_theme("blue")
@@ -35,5 +36,5 @@ class App(customtkinter.CTk):
 
 if __name__ == "__main__":
     app = App()
-    init_app(app)
+    init_app_event(app)
     app.mainloop()
