@@ -47,7 +47,7 @@ class YSelector(customtkinter.CTkFrame):
         self.label_y_function_selector = customtkinter.CTkLabel(self, text="Графік функції:")
         self.label_y_function_selector.grid(row=2, column=1, padx=(20, 5), pady=5)
         self.cur_y = tkinter.StringVar(value='Y1')
-        self.plot_y_function_optionmenu = customtkinter.CTkOptionMenu(self, variable=self.cur_y, values=['Y1', 'Y2', 'Y3'], 
+        self.plot_y_function_optionmenu = customtkinter.CTkOptionMenu(self, variable=self.cur_y, values=['Y1', 'Y2', 'Y3', 'Y4'], 
                                                            command=change_func)
         self.plot_y_function_optionmenu.grid(row=2, column=2, padx=10, pady=5)
 
@@ -102,13 +102,13 @@ class VectorView(customtkinter.CTkScrollableFrame):
         self._scrollbar.configure(width=0)
         self.grid(row=0, column=3, padx=(10, 5), pady=(30, 5), sticky="nsew")
 
-        self.X1_dim = tkinter.StringVar(value='3')
+        self.X1_dim = tkinter.StringVar(value='2')
         self.label_X1_dim = customtkinter.CTkLabel(self, text="Розмірність X1:")
         self.label_X1_dim.grid(row=2, column=0, padx=5, pady=10, sticky="e")
         self.entry_X1_dim = customtkinter.CTkEntry(self, width=40, textvariable=self.X1_dim)
         self.entry_X1_dim.grid(row=2, column=1, padx=(5, 30),pady=10, sticky="w", columnspan=1)
 
-        self.X2_dim = tkinter.StringVar(value='3')
+        self.X2_dim = tkinter.StringVar(value='2')
         self.label_X2_dim = customtkinter.CTkLabel(self, text="Розмірність X2:")
         self.label_X2_dim.grid(row=3, column=0, padx=5, pady=10, sticky="e")
         self.entry_X2_dim = customtkinter.CTkEntry(self, width=40, textvariable=self.X2_dim)
@@ -120,7 +120,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
         self.entry_X3_dim = customtkinter.CTkEntry(self, width=40, textvariable=self.X3_dim)
         self.entry_X3_dim.grid(row=4, column=1, padx=(5, 30),pady=10, sticky="w", columnspan=1)
 
-        self.Y_dim = tkinter.StringVar(value='3')
+        self.Y_dim = tkinter.StringVar(value='4')
         self.label_Y_dim = customtkinter.CTkLabel(self, text="Розмірність Y:")
         self.label_Y_dim.grid(row=5, column=0, padx=5, pady=10, sticky="e")
         self.entry_Y_dim = customtkinter.CTkEntry(self, width=40, textvariable=self.Y_dim)
