@@ -45,9 +45,9 @@ def calculate_y():
     update_y_selector()
 
     weights = WEIGHTS[APP.additional_view.weights_radio_var.get()]
-    x1_deg = APP.polynom_view.X1_deg.get()
-    x2_deg = APP.polynom_view.X2_deg.get()
-    x3_deg = APP.polynom_view.X3_deg.get()
+    x1_deg = int(APP.polynom_view.X1_deg.get())
+    x2_deg = int(APP.polynom_view.X2_deg.get())
+    x3_deg = int(APP.polynom_view.X3_deg.get())
 
     x, y = format_input()
     X_DATA = x

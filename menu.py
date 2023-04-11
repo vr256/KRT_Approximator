@@ -13,7 +13,8 @@ APP = None
 SEARCH_ICON_LIGHT = 'search_icon.png'
 SEARCH_ICON_DARK = 'search_icon.png'
 
-SYSTEM_SOLUTION_METHODS = ["Псевдооберненої матриці", 
+SYSTEM_SOLUTION_METHODS = ["Псевдооберненої матриці",
+                           "Еволюційний алгоритм", 
                            "Adam", 
                            "SGD", 
                            "NAG", 
@@ -24,6 +25,8 @@ POLYNOMS = ["Ерміта",
             "Лаґерра", 
             "Чебишова"]
 
+WEIGHTS = ["MaxMin", 
+           "Середнє"]
 
 class Sidebar(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -138,9 +141,9 @@ class AdditionalView(customtkinter.CTkScrollableFrame):
         self.weights_radio_var = tkinter.IntVar(value=0)
         self.label_radio_group = customtkinter.CTkLabel(self, text="Ваги цільових функцій")
         self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_avg = customtkinter.CTkRadioButton(self, radiobutton_width=17, radiobutton_height=17, text="Середнє", variable=self.weights_radio_var, value=0)
+        self.radio_button_avg = customtkinter.CTkRadioButton(self, radiobutton_width=17, radiobutton_height=17, text=WEIGHTS[0], variable=self.weights_radio_var, value=0)
         self.radio_button_avg.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_maxmin = customtkinter.CTkRadioButton(self, radiobutton_width=17, radiobutton_height=17, text="MaxMin", variable=self.weights_radio_var, value=1)
+        self.radio_button_maxmin = customtkinter.CTkRadioButton(self, radiobutton_width=17, radiobutton_height=17, text=WEIGHTS[1], variable=self.weights_radio_var, value=1)
         self.radio_button_maxmin.grid(row=2, column=2, pady=10, padx=20, sticky="n")
 
 
