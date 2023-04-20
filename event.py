@@ -5,7 +5,7 @@ from solution import main_solution
 
 CURRENT_THEME = None
 CURRENT_POLYNOM = "Ерміта"
-CURRENT_METHOD = "Псевдооберненої матриці"
+CURRENT_METHOD = "Adam"
 CURRENT_PRED = {}
 
 WEIGHTS =  ["Середнє", "MaxMin"]
@@ -15,8 +15,8 @@ OUTPUT_PATH = None
 
 CURRENT_INPUT = None
 
-PATH_LIGHT = 'image_light.png'
-PATH_DARK = 'image_dark.png'
+PATH_LIGHT = 'image/image_light.png'
+PATH_DARK = 'image/image_dark.png'
 APP = None
 
 #Plotting

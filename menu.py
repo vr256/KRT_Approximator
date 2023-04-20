@@ -6,19 +6,20 @@ from event import change_appearance_mode_event, change_func, \
                   change_polynom, manual_input, input_file, \
                   output_file
 
-PATH_LIGHT = 'image_light.png'
-PATH_DARK = 'image_dark.png'
+PATH_LIGHT = 'image/image_light.png'
+PATH_DARK = 'image/image_dark.png'
 
 APP = None
-SEARCH_ICON_LIGHT = 'search_icon.png'
-SEARCH_ICON_DARK = 'search_icon.png'
+SEARCH_ICON_LIGHT = 'image/search_icon.png'
+SEARCH_ICON_DARK = 'image/search_icon.png'
 
-SYSTEM_SOLUTION_METHODS = ["Псевдооберненої матриці",
-                           "Еволюційний алгоритм", 
-                           "Adam", 
+SYSTEM_SOLUTION_METHODS = ["Adam", 
                            "SGD", 
-                           "NAG", 
-                           "Momentum"]
+                           "Nesterov", 
+                           "RMSprop",
+                           "Adagrad",
+                           "Псевдооберненої матриці",
+                           "Еволюційний алгоритм",]
 
 POLYNOMS = ["Ерміта", 
             "Лежандра", 

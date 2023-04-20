@@ -13,16 +13,17 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        # configure window
+        # window
         self.title("СА Лабораторна робота №2")
         self.geometry(f"{1300}x{600}")
 
-        # configure grid layout
+        # grid layout
         self.grid_columnconfigure((1, 2), weight=30)
         self.grid_columnconfigure(3, weight=20)
         self.grid_columnconfigure(4, weight=1)
         self.grid_rowconfigure((0, 1, 2), weight=1)
 
+        # contents
         self.sidebar = Sidebar(master=self, width=140, corner_radius=0)
         self.y_selector = YSelector(master=self)
         self.calculate_y = YCalculator(master=self)

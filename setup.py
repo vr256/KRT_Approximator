@@ -7,7 +7,7 @@ build_exe_options = {"packages": packages, "excludes": []}
 
 base = "Win32GUI" if sys.platform == "win32" else None
 
-exe = Executable(script="lab.py", base=base)
+exe = Executable(script="main.py", base=base)
 
 setup(
     name="Lab2",
