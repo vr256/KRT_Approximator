@@ -15,7 +15,7 @@ class App(customtkinter.CTk):
 
         # window
         self.title("СА Лабораторна робота №2")
-        self.geometry(f"{1300}x{600}")
+        self.geometry(f"{1400}x{600}")
 
         # grid layout
         self.grid_columnconfigure((1, 2), weight=30)
@@ -34,6 +34,10 @@ class App(customtkinter.CTk):
         self.additional_view = AdditionalView(master=self, label_text="Додатково", width=150)
         self.input_view = InputView(master=self, label_text="Введення даних")
 
+
+# Track computation time (evolutional algorithms)
+# error warnings
+# working file output and manual input
 
 if __name__ == "__main__":
     app = App()

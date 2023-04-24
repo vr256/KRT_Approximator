@@ -1,7 +1,11 @@
+import re
 import customtkinter
 import matplotlib.pyplot as plt
+
 from PIL import Image
+from sklearn.metrics import mean_squared_error as mse
 from solution import main_solution
+from utils import convert_polynomials
 
 CURRENT_THEME = None
 CURRENT_POLYNOM = "Ерміта"
@@ -19,17 +23,33 @@ PATH_LIGHT = 'image/image_light.png'
 PATH_DARK = 'image/image_dark.png'
 APP = None
 
-#Plotting
+# Plotting
 X_DATA = [0]
 Y_DATA_TRUE = [0]
 Y_DATA_PRED = [0]
 
+N = 3
+M = 4
+
+POLYNOMS_NAMES = {"Ерміта": 'H',
+                 "Лежандра": 'L',
+                 "Лаґерра": 'L',
+                 "Чебишова": 'T',}
+
+NORMALIZED = {True: 'з нормуванням',
+              False: 'у відновленій формі'}
 
 def init_app_event(my_app):
     global APP
     APP = my_app
 
 # Options
+def change_func(y: str):
+    global CURRENT_PRED
+    #y_pred = CURRENT_PRED[y]
+    APP.y_selector.cur_y.set(y)
+    make_plots()
+
 def change_polynom(polynom: str):
     global CURRENT_POLYNOM
     CURRENT_POLYNOM = polynom
@@ -40,7 +60,7 @@ def change_method(method: str):
     CURRENT_METHOD = method
 
 
-def calculate_y():
+def calculate_y(latex=False):
     global X_DATA, Y_DATA_TRUE, Y_DATA_PRED
     update_y_selector()
 
@@ -52,10 +72,16 @@ def calculate_y():
     x, y = format_input()
     X_DATA = x
     Y_DATA_TRUE = y
-    res_y = main_solution(x, y, method=CURRENT_METHOD, polynom=CURRENT_POLYNOM, \
+    res_y, res_lam, res_a, res_c = main_solution(x, y, method=CURRENT_METHOD, polynom=CURRENT_POLYNOM, \
                           weights=weights, degs=(x1_deg, x2_deg, x3_deg))
     Y_DATA_PRED = res_y
     make_plots()
+    total =  str_c_coeffs(res_c, latex=latex)
+    total += str_a_coeffs(res_a, latex=latex)
+    total += str_lam_coeffs(res_lam, pol=CURRENT_POLYNOM, latex=latex)
+    total += str_lam_pol_coeffs(res_lam, pol=CURRENT_POLYNOM, latex=latex)
+    APP.main_tabview.results_textbox.delete('1.0', customtkinter.END)
+    APP.main_tabview.results_textbox.insert('0.0', total)
 
 # Appearance
 def change_appearance_mode_event(new_appearance_mode: str):
@@ -85,6 +111,7 @@ def make_plots(key=1):
         fig, ax = plt.subplots(1, 1)
         ax.plot(range(1, len(y_true) + 1), y_true, label='Значення вибірки')
         ax.plot(range(1, len(y_pred) + 1), y_pred, label='Апроксимовані значення')
+        ax.set_title(f'MSE {mse(y_true, y_pred):.3f}', y=1.04)
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
                     ncol=2, fancybox=True, shadow=True)
         fig.savefig(PATH_LIGHT)
@@ -93,6 +120,7 @@ def make_plots(key=1):
         fig, ax = plt.subplots(1, 1)
         ax.plot(range(1, len(y_true) + 1), y_true, label='Значення вибірки')
         ax.plot(range(1, len(y_pred) + 1), y_pred, label='Апроксимовані значення')
+        ax.set_title(f'MSE {mse(y_true, y_pred):.3f}', y=1.04)
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
                     ncol=2, fancybox=True, shadow=True)
         fig.savefig(PATH_DARK)
@@ -105,14 +133,105 @@ def make_plots(key=1):
         APP.main_tabview.results_plot.pack(side ="bottom", fill="both", expand="yes")
 
 
-def change_func(y: str):
-    global CURRENT_PRED
-    #y_pred = CURRENT_PRED[y]
-    APP.y_selector.cur_y.set(y)
-    make_plots()
-    
-    #master.results_plot = customtkinter.CTkLabel(master.tabview.tab("Графік"), text='', image=my_image)
-    #master.results_plot.pack()
+# printing results
+
+def str_c_coeffs(c, latex=False):
+    total = f'Матриця коефіцієнтів C\n\n'
+    if not latex:
+        for ind, coef in enumerate(c):
+            res = f'Ф{ind + 1}(' + ', '.join([f'x{h}' for h in range(1, N)]) + f', x{N}) ='
+            for vec_id, val in enumerate(coef):
+                    res += f'{val.numpy()[0]:.4f}*Ф{ind + 1}{vec_id+ 1 }(x{vec_id + 1}) '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n'
+    else:
+        for ind, coef in enumerate(c):
+            res = f'Ф_{{{ind + 1}}}(' + ', '.join([f'x_{{{h}}}' for h in range(1, N)]) + f', x_{{{N}}}) ='
+            for vec_id, val in enumerate(coef):
+                    res += f'{val.numpy()[0]:.4f} \cdot Ф_{{{ind + 1}{vec_id + 1}}}(x_{{{vec_id + 1}}}) '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n'
+    return total + '\n'
+
+
+def str_a_coeffs(a, latex=False):
+    total = f'Матриця коефіцієнтів A\n\n'
+    if not latex:
+        for ind, coef in enumerate(a):
+            for vec_id, x_vec in enumerate(coef):
+                res = f'Ф{ind + 1}{vec_id + 1}(x{vec_id + 1}) ='
+                for elem_id, val in enumerate(x_vec.numpy()):
+                    res += f'{val:.4f}*Ψ{vec_id + 1}{elem_id + 1}(x{vec_id + 1}{elem_id + 1}) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n'
+            total += '\n'
+    else:
+        for ind, coef in enumerate(a):
+            for vec_id, x_vec in enumerate(coef):
+                res = f'Ф_{{{ind + 1}{vec_id + 1}}}(x_{{{vec_id + 1}}}) ='
+                for elem_id, val in enumerate(x_vec.numpy()):
+                    res += f'{val:.4f} \cdot \Psi_{{{vec_id + 1}{elem_id + 1}}}(x_{{{vec_id + 1}{elem_id + 1}}}) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n'
+            total += '\n'
+    return total  
+
+
+def str_lam_coeffs(lam, pol, latex=False):
+    pol_name = POLYNOMS_NAMES[pol]
+    total = f'Отримані функції через поліноми {pol}\n\n'
+    if not latex:
+        for ind, coef in enumerate(lam):
+            res = f'Ф{ind + 1}(' + ', '.join([f'x{h}' for h in range(1, N)]) + f', x{N}) ='
+            for vec_id, x_vec in enumerate(coef):
+                for elem_id, x_elem in enumerate(x_vec):
+                    for deg, val in enumerate(x_elem.numpy()):
+                        res += f'{val:.4f}*{pol_name}{deg}(x{vec_id + 1}{elem_id + 1}) '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n\n'
+    else:
+        for ind, coef in enumerate(lam):
+            res = f'Ф_{{{ind + 1}}}(' + ', '.join([f'x_{{{h}}}' for h in range(1, N)]) + f', x_{{{N}}}) ='
+            for vec_id, x_vec in enumerate(coef):
+                for elem_id, x_elem in enumerate(x_vec):
+                    for deg, val in enumerate(x_elem.numpy()):
+                        res += f'{val:.4f} \cdot {pol_name}_{{{deg}}}(x_{{{vec_id + 1}{elem_id + 1}}}) '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n\n'
+    return total    
+
+
+def str_lam_pol_coeffs(lam, pol, latex=False, is_normalized=False):
+    total = f'Отримані функції y вигляді многочленів ({NORMALIZED[is_normalized]})\n\n'
+    biases, coeffs = convert_polynomials(coeffs=lam, pol=pol)
+    if not latex:
+        for ind, coef in enumerate(coeffs):
+            res = f'Ф{ind + 1}(' + ', '.join([f'x{h}' for h in range(1, N)]) + f'x{N}) ={biases[ind]:.4f} '
+            for vec_id, x_vec in enumerate(coef):
+                for elem_id, x_elem in enumerate(x_vec):
+                    for deg, val in enumerate(x_elem):
+                        res += f'{val:.4f}*x{vec_id+1}{elem_id + 1}^{deg + 1} '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n\n'
+    else:
+        for ind, coef in enumerate(coeffs):
+            res = f'Ф_{{{ind + 1}}}(' + ', '.join([f'x_{{{h}}}' for h in range(1, N)]) + f'x_{{{N}}}) ={biases[ind]:.4f} '
+            for vec_id, x_vec in enumerate(coef):
+                for elem_id, x_elem in enumerate(x_vec):
+                    for deg, val in enumerate(x_elem):
+                        res += f'{val:.4f} \cdot x_{{{vec_id + 1}{elem_id + 1}}}^{{{deg + 1}}} '
+            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+            res = res.replace('=', '= ').replace('-', '- ').rstrip()
+            total += res + '\n\n'
+    return total  
+
 
 # Input 
 def manual_input():

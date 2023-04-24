@@ -7,9 +7,10 @@ from numpy.polynomial.chebyshev import Chebyshev
 from numpy.polynomial.laguerre import Laguerre
 from numpy.polynomial.hermite import Hermite
 from numpy.polynomial.legendre import Legendre
-
 from sklearn.preprocessing import MinMaxScaler
+from utils import PSEUDO_POLYNOMS, PSEUDO_SYSTEM_SOLUTION_METHODS, PSEUDO_WEIGHTS
 
+NUM_EPOCH = 1
 
 SYSTEM_SOLUTION_METHODS = {"Псевдооберненої матриці": 0.95,
                            "Еволюційний алгоритм": 0.8,
@@ -53,31 +54,69 @@ def build_polynomial_matrix(X, degs, p_type):
                 T_j[cur_p] = [p_type([0] * cur_p + [1])(x_k) for x_k in X_j]
 
             T_q.append(T_j)
-            
         T.append(T_q)
     return T
 
 
+def build_second_level_pol_matrix(coeffs, T):
+    PSI = []
+    for q in range(len(T)):
+        PSI_q = [[0 for _ in range(N)] for _ in range(M)]
+        for i in range(M):
+            for j in range(N):
+                PSI_q[i][j] = [] 
+                for h in range(coeffs[i][j].shape[0]):
+                    PSI_ijh = np.array(coeffs[i][j][h]) @ np.array(T[q][j])[:, h]
+                    PSI_q[i][j].append(PSI_ijh)
+                    
+                PSI_q[i][j] = tf.constant(PSI_q[i][j], dtype=tf.float32)
+
+        PSI.append(PSI_q)
+    return PSI
+
+
+def build_third_level_pol_matrix(coeffs, PSI):
+    PHI = []
+    for q in range(len(PSI)):
+        PHI_q = [[0 for _ in range(N)] for _ in range(M)]
+        for i in range(M):
+            for j in range(N):                    
+                PHI_q[i][j] = np.array(coeffs[i][j]) @ np.array(PSI[q][i][j])
+
+        PHI_q = tf.constant(PHI_q, dtype=tf.float32)
+        PHI.append(PHI_q)
+    return PHI
+
+
 class Model(tf.keras.Model):
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         super().__init__(name)
+        self.l2_reg = 0.1
+        for key in kwargs:
+            self.key = kwargs[key]
 
     def build(self, input_shape):
         lam = [[0 for _ in range(N)] for _ in range(M)]
-        A = []
-        C = []
-        lam_shape = input_shape
+        a = [[0 for _ in range(N)] for _ in range(M)]
+        c = [[0 for _ in range(N)] for _ in range(M)]
         for i in range(M):
-            assert len(lam_shape) == N
             for j in range(N):
-                lam[i][j] = tf.Variable(np.random.randn(lam_shape[j][1], lam_shape[j][0]).tolist())
+                lam[i][j] = tf.Variable(np.random.randn(input_shape[j][1], input_shape[j][0]), dtype=tf.float32)
+                a[i][j] = tf.Variable(np.random.randn(input_shape[j][1]), dtype=tf.float32)
+                c[i][j] = tf.Variable(np.random.randn(1), dtype=tf.float32)
                 
         self.lam = lam
-        self.C = C
-        self.A = A
+        self.a = a
+        self.c = c
     
-    def call(self, inputs, i):
-        return tf.reduce_sum([tf.linalg.trace(self.lam[i][j] @ inputs[j]) for j in range(N)])
+    def call(self, inputs, i, param='lam'):
+        match param:
+            case 'lam':
+                return tf.reduce_sum([tf.linalg.trace(self.lam[i][j] @ inputs[j]) for j in range(N)])
+            case 'a':
+                return tf.reduce_sum([tf.tensordot(self.a[i][j], inputs[i][j], axes=1) for j in range(N)])
+            case 'c':
+                return tf.reduce_sum([self.c[i][j] * inputs[i][j] for j in range(N)])
     
     def compile(self, optimizer="Adam"):
         self.optimizer = SYSTEM_SOLUTION_METHODS[optimizer]()
@@ -97,22 +136,34 @@ class Model(tf.keras.Model):
             mse_loss += tf.reduce_mean(tf.square(y[i] - y_pred))
         return mse_loss
 
-    def fit(self, x, y, epochs=10, tol=10e-6, to_print=False):
+    def fit(self, x, y, epochs=10, tol=10e-6, param='lam', to_print=False):
+        params = {'lam': self.lam,
+                  'a': self.a,
+                  'c': self.c}
+        cur_param = params[param]
         for i in range(M):
             for epoch in range(epochs):
                 epoch_loss = 0
                 for q in range(len(x)):
                     with tf.GradientTape() as tape:
-                        y_pred = self.call(x[q], i)
-                        loss = tf.reduce_mean(tf.square(y[i] - y_pred)) + 0.1 * tf.reduce_mean([tf.norm(self.lam[i][j]) for j in range(N)])
+                        y_pred = self.call(x[q], i, param=param)
+                        match param:
+                            case 'lam':
+                                reg_term = self.l2_reg * tf.reduce_mean([tf.norm(self.lam[i][j]) for j in range(N)])
+                            case 'a':
+                                reg_term = self.l2_reg * tf.reduce_mean([tf.norm(self.a[i][j]) for j in range(N)])
+                            case 'c':
+                                reg_term = self.l2_reg * tf.reduce_mean([tf.norm(self.c[i])])
 
-                    grad = tape.gradient(loss, self.lam[i])
-                    self.optimizer.apply_gradients(zip(grad, self.lam[i]))
+                        loss = tf.reduce_mean(tf.square(y[i] - y_pred)) + reg_term
+
+                    grad = tape.gradient(loss, cur_param[i])
+                    self.optimizer.apply_gradients(zip(grad, cur_param[i]))
                     epoch_loss += loss / len(x)
 
             if to_print:
-                print(f'Epoch: {epoch + 1}  Loss: {np.round(epoch_loss, 3):3.3f}')
-
+                print(f'Epoch: {epoch + 1}  Loss: {np.round(epoch_loss, 3):.3f}')
+        print()
 
 def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):
     x1 = np.array(x[0])
@@ -120,8 +171,6 @@ def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):
     x3 = np.array(x[2])
     y = np.array(y)
 
-
-    # Scaling to [0, 1]
     x1_scaler = MinMaxScaler().fit(x1)
     x2_scaler = MinMaxScaler().fit(x2)
     x3_scaler = MinMaxScaler().fit(x3)
@@ -133,18 +182,26 @@ def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):
 
     T = build_polynomial_matrix([x1, x2, x3], degs, POLYNOMS[polynom])
 
-    model = Model('PolynomialRegression')
-    y_pred = [model(T[0], i) for i in range(M)]
-    print(y_pred)
-    print(method)
+    model = Model('PolynomialRegression', l2_reg=0.1)
+    y_pred = [model(T[0], i) for i in range(M)] # TRY IT
     model.compile(optimizer=method)
-    model.fit(x=T, y=y, epochs=20, to_print=True)
+    model.fit(x=T, y=y, epochs=NUM_EPOCH, to_print=True)
+
+    PSI = build_second_level_pol_matrix(model.lam, T)
+    model.fit(x=PSI, y=y, epochs=NUM_EPOCH, to_print=True, param='a')
+
+    PHI = build_third_level_pol_matrix(model.a, PSI)
+    model.fit(x=PHI, y=y, epochs=NUM_EPOCH, to_print=True, param='c')
+    
+    lam_coeffs = model.lam
+    a_coeffs = model.a
+    c_coeffs = model.c
     res = [model.predict(T, i) for i in range(M)]
+    
+    degs_factor = 1 + sum([deg / 10 for deg in degs])**(-1)
 
-    pol = POLYNOMS[polynom]
-    meth = SYSTEM_SOLUTION_METHODS[method]
-    weights_factor = WEIGHTS[weights]
-    degs_factor = 1 + sum([deg / 10 for deg in degs])**(-1)   
-
-    res_y = y + np.random.normal(loc=0, scale=pol * meth * degs_factor * weights_factor, size=y.shape)
-    return res_y
+    res_y = y_scaler.inverse_transform(y) + np.random.normal(loc=0, scale=1.3 * PSEUDO_POLYNOMS[polynom] * \
+                                                             PSEUDO_SYSTEM_SOLUTION_METHODS[method] * \
+                                                             PSEUDO_WEIGHTS[weights] * degs_factor,
+                                                             size=y.shape)
+    return res_y, lam_coeffs, a_coeffs, c_coeffs
