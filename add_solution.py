@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import scipy
 
 from functools import partial
 from numpy.polynomial.chebyshev import Chebyshev
@@ -162,7 +161,8 @@ class Model(tf.keras.Model):
                     epoch_loss += loss / len(x)
 
             if to_print:
-                print(f'Epoch: {epoch + 1}  Loss: {np.round(epoch_loss, 3):.3f}')
+                pass
+                #print(f'Epoch: {epoch + 1}  Loss: {np.round(epoch_loss, 3):.3f}')
         print()
 
 def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):
