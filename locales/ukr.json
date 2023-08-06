@@ -1,0 +1,28 @@
+{
+    "app": {
+        "title": "Ієрархічний апроксиматор",
+        "vectorView": "Вектори",
+        "polynomView": "Поліноми",
+        "additionalView": "Різне",
+        "inputView": "Введення даних!"
+    },
+    "config_view": {
+        "optimizers": ["Adam",
+                      "SGD",
+                      "Nesterov",
+                      "RMSprop",
+                      "Adagrad"],
+        "polynomials": ["Ерміта",
+                        "Лежандра",
+                        "Лаґерра",
+                        "Чебишова"]
+    },
+    "result_view": {
+        "info": "Наближення функцій\nієрархічною поліномі-\nальною моделлю",
+        "header": "Про програму",
+        "theme_caption": "Кольорова тема:",
+        "themes": ["Світла", "Темна"],
+        "plot_caption": "Графік функції:"
+
+    }
+}

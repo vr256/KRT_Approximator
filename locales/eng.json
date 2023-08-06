@@ -1,0 +1,28 @@
+{
+    "app": {
+        "title": "Hierarchical approximator",
+        "vectorView": "Vectors",
+        "polynomView": "Polynomials",
+        "additionalView": "Miscellaneous",
+        "inputView": "Input"
+    },
+    "config_view": {
+        "optimizers": ["Adam",
+                      "SGD",
+                      "Nesterov",
+                      "RMSprop",
+                      "Adagrad"],
+        "polynomials": ["Hermite",
+                        "Legendre",
+                        "Laguerre",
+                        "Chebyshev"]
+    },
+    "result_view": {
+        "info": "Functions approximan-\ntion using hierarchical\npolynomial model",
+        "header": "About app",
+        "theme_caption": "Theme:",
+        "themes": ["Light", "Dark"],
+        "plot_caption": "Function plot:"
+
+    }
+}

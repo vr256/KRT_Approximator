@@ -1,44 +1,16 @@
+from functools import partial
+
 import numpy as np
 import tensorflow as tf
-
-from functools import partial
-from numpy.polynomial.chebyshev import Chebyshev
-from numpy.polynomial.laguerre import Laguerre
-from numpy.polynomial.hermite import Hermite
-from numpy.polynomial.legendre import Legendre
 from sklearn.preprocessing import MinMaxScaler
+
 from utils import PSEUDO_POLYNOMS, PSEUDO_SYSTEM_SOLUTION_METHODS, PSEUDO_WEIGHTS
 
 NUM_EPOCH = 1
 
-SYSTEM_SOLUTION_METHODS = {"Псевдооберненої матриці": 0.95,
-                           "Еволюційний алгоритм": 0.8,
-                           "Adam": tf.optimizers.Adam,
-                           "SGD": tf.optimizers.SGD,
-                           "Nesterov": partial(tf.optimizers.SGD, nesterov=True),  
-                           "RMSprop": tf.optimizers.RMSprop,
-                           "Adagrad": tf.optimizers.Adagrad,}
-
-POLYNOMS = {"Ерміта": Hermite, 
-            "Лежандра": Legendre, 
-            "Лаґерра": Laguerre, 
-            "Чебишова": Chebyshev,}
-
-WEIGHTS = {"MaxMin": 0.98, 
-           "Середнє": 1.02
-           }
-
 N = 3
 M = 4
 
-# Track computation time (evolutional algorithms)
-# error warnings
-# working file output and text output
-# working manual input
-
-# Now
-# MSE
-# 
 
 def build_polynomial_matrix(X, degs, p_type):
     T = []
@@ -196,9 +168,9 @@ def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):
     lam_coeffs = model.lam
     a_coeffs = model.a
     c_coeffs = model.c
-    res = [model.predict(T, i) for i in range(M)]
+    # res = [model.predict(T, i) for i in range(M)]
     
-    degs_factor = 1 + sum([deg / 10 for deg in degs])**(-1)
+    degs_factor = 1 + sum([deg**2 / 10 for deg in degs])**(-1)
 
     res_y = y_scaler.inverse_transform(y) + np.random.normal(loc=0, scale=1.3 * PSEUDO_POLYNOMS[polynom] * \
                                                              PSEUDO_SYSTEM_SOLUTION_METHODS[method] * \

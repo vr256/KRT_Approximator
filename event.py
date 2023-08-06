@@ -1,20 +1,19 @@
 import re
+
 import customtkinter
 import matplotlib.pyplot as plt
-import add_solution
-import mul_solution
-
+import numpy as np
 from PIL import Image
 from sklearn.metrics import mean_squared_error as mse
-from utils import convert_polynomials
 
+from solution import main_solution
+from utils import convert_polynomials
 
 CURRENT_THEME = None
 CURRENT_POLYNOM = "Ерміта"
 CURRENT_METHOD = "Adam"
 CURRENT_PRED = {}
 
-WEIGHTS = ["Середнє", "MaxMin"]
 
 INPUT_PATH = None
 OUTPUT_PATH = None
@@ -39,9 +38,6 @@ POLYNOMS_NAMES = {"Ерміта": 'H',
                   "Лаґерра": 'L',
                   "Чебишова": 'T', }
 
-
-SOLVER = {0: add_solution.main_solution,
-          1: mul_solution.main_solution}
 
 
 NORMALIZED = {True: 'з нормуванням',
@@ -84,25 +80,32 @@ def calculate_y():
     global X_DATA, Y_DATA_TRUE, Y_DATA_PRED
     update_y_selector()
 
-    weights = WEIGHTS[APP.additional_view.weights_radio_var.get()]
-    solve = SOLVER[APP.additional_view.approach_radio_var.get()]
+    way = APP.mist_view.approach_radio_var.get()
     x1_deg = int(APP.polynom_view.X1_deg.get())
     x2_deg = int(APP.polynom_view.X2_deg.get())
     x3_deg = int(APP.polynom_view.X3_deg.get())
 
-    x, y = format_input()
-    X_DATA = x
-    Y_DATA_TRUE = y
-    res_y, res_lam, res_a, res_c = solve(x, y, method=CURRENT_METHOD, polynom=CURRENT_POLYNOM,
-                                         weights=weights, degs=(x1_deg, x2_deg, x3_deg))
-    Y_DATA_PRED = res_y
-    make_plots()
-    total = str_c_coeffs(res_c)
-    total += str_a_coeffs(res_a)
-    total += str_lam_coeffs(res_lam, pol=CURRENT_POLYNOM)
-    total += str_lam_pol_coeffs(res_lam, pol=CURRENT_POLYNOM)
-    APP.main_tabview.results_textbox.delete('1.0', customtkinter.END)
-    APP.main_tabview.results_textbox.insert('0.0', total)
+    if way and CURRENT_METHOD in ["Псевдооберненої матриці",
+                                  "Генетичний алгоритм"]:
+        total = 'Для мультиплікативної форми залежностей необхідно обрати градієнтний метод вирішення несумісної системи'
+        APP.main_tabview.results_textbox.delete('1.0', customtkinter.END)
+        APP.main_tabview.results_textbox.insert('0.0', total)
+    else:
+        x, y = format_input()
+        X_DATA = x
+        Y_DATA_TRUE = y
+        res_y, res_lam, res_a, res_c = main_solution(x, y, method=CURRENT_METHOD, polynom=CURRENT_POLYNOM, degs=(x1_deg, x2_deg, x3_deg))
+        Y_DATA_PRED = res_y
+        make_plots()
+        total = ''
+        if not way: 
+            total += str_c_coeffs(res_c)
+            total += str_a_coeffs(res_a)
+        total += str_lam_coeffs(res_lam, pol=CURRENT_POLYNOM, mul=way)
+        if not way:
+            total += str_lam_pol_coeffs(res_lam, pol=CURRENT_POLYNOM)
+        APP.main_tabview.results_textbox.delete('1.0', customtkinter.END)
+        APP.main_tabview.results_textbox.insert('0.0', total)
 
 # Appearance
 
@@ -215,32 +218,58 @@ def str_a_coeffs(a):
     return total
 
 
-def str_lam_coeffs(lam, pol):
+def str_lam_coeffs(lam, pol, mul=False):
     global LATEX
+    if mul:
+        lam = np.array(lam) / 13
     pol_name = POLYNOMS_NAMES[pol]
     total = f'Отримані функції через поліноми {pol}\n\n'
-    if not LATEX:
-        for ind, coef in enumerate(lam):
-            res = f'Ф{ind + 1}(' + \
-                ', '.join([f'x{h}' for h in range(1, N)]) + f', x{N}) ='
-            for vec_id, x_vec in enumerate(coef):
-                for elem_id, x_elem in enumerate(x_vec):
-                    for deg, val in enumerate(x_elem.numpy()):
-                        res += f'{val:.4f}*{pol_name}{deg}(x{vec_id + 1}{elem_id + 1}) '
-            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
-            res = res.replace('=', '= ').replace('-', '- ').rstrip()
-            total += res + '\n\n'
+    if mul:
+        if not LATEX:
+            for ind, coef in enumerate(lam):
+                res = f'Ф{ind + 1}(' + \
+                    ', '.join([f'x{h}' for h in range(1, N)]) + f', x{N}) ='
+                for vec_id, x_vec in enumerate(coef):
+                    for elem_id, x_elem in enumerate(x_vec):
+                        for deg, val in enumerate(x_elem.numpy()):
+                            res += f'{val:.4f}*ln({pol_name}{deg}(x{vec_id + 1}{elem_id + 1}) 1) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n\n'
+        else:
+            for ind, coef in enumerate(lam):
+                res = f'\Phi_{{{ind + 1}}}(' + ', '.join(
+                    [f'x_{{{h}}}' for h in range(1, N)]) + f', x_{{{N}}}) ='
+                for vec_id, x_vec in enumerate(coef):
+                    for elem_id, x_elem in enumerate(x_vec):
+                        for deg, val in enumerate(x_elem.numpy()):
+                            res += fr'{val:.4f} \cdot \ln \left ( {pol_name}_{{{deg}}}(x_{{{vec_id + 1}{elem_id + 1}}}) 1 \right ) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n\n'
     else:
-        for ind, coef in enumerate(lam):
-            res = f'\Phi_{{{ind + 1}}}(' + ', '.join(
-                [f'x_{{{h}}}' for h in range(1, N)]) + f', x_{{{N}}}) ='
-            for vec_id, x_vec in enumerate(coef):
-                for elem_id, x_elem in enumerate(x_vec):
-                    for deg, val in enumerate(x_elem.numpy()):
-                        res += f'{val:.4f} \cdot {pol_name}_{{{deg}}}(x_{{{vec_id + 1}{elem_id + 1}}}) '
-            res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
-            res = res.replace('=', '= ').replace('-', '- ').rstrip()
-            total += res + '\n\n'
+        if not LATEX:
+            for ind, coef in enumerate(lam):
+                res = f'Ф{ind + 1}(' + \
+                    ', '.join([f'x{h}' for h in range(1, N)]) + f', x{N}) ='
+                for vec_id, x_vec in enumerate(coef):
+                    for elem_id, x_elem in enumerate(x_vec):
+                        for deg, val in enumerate(x_elem.numpy()):
+                            res += f'{val:.4f}*{pol_name}{deg}(x{vec_id + 1}{elem_id + 1}) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n\n'
+        else:
+            for ind, coef in enumerate(lam):
+                res = f'\Phi_{{{ind + 1}}}(' + ', '.join(
+                    [f'x_{{{h}}}' for h in range(1, N)]) + f', x_{{{N}}}) ='
+                for vec_id, x_vec in enumerate(coef):
+                    for elem_id, x_elem in enumerate(x_vec):
+                        for deg, val in enumerate(x_elem.numpy()):
+                            res += f'{val:.4f} \cdot {pol_name}_{{{deg}}}(x_{{{vec_id + 1}{elem_id + 1}}}) '
+                res = re.sub(r'( )(\d)', r'\1+ \2', res, count=len(res.split(' ')))
+                res = res.replace('=', '= ').replace('-', '- ').rstrip()
+                total += res + '\n\n'
     return total
 
 

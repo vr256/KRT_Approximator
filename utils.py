@@ -1,8 +1,7 @@
 import numpy as np
-
 from numpy.polynomial.chebyshev import Chebyshev, cheb2poly
-from numpy.polynomial.laguerre import Laguerre, lag2poly
 from numpy.polynomial.hermite import Hermite, herm2poly
+from numpy.polynomial.laguerre import Laguerre, lag2poly
 from numpy.polynomial.legendre import Legendre, leg2poly
 
 POLYNOMS = {"Ерміта": (Hermite, herm2poly),
@@ -10,8 +9,8 @@ POLYNOMS = {"Ерміта": (Hermite, herm2poly),
             "Лаґерра": (Laguerre, lag2poly), 
             "Чебишова": (Chebyshev, cheb2poly)}
 
-PSEUDO_SYSTEM_SOLUTION_METHODS = {"Псевдооберненої матриці": 0.95,
-                           "Еволюційний алгоритм": 0.8,
+PSEUDO_SYSTEM_SOLUTION_METHODS = {"Псевдооберненої матриці": 0.115,
+                           "Генетичний алгоритм": 0.875,
                            "Adam": 0.985,
                            "SGD": 1.2,
                            "Nesterov": 1.05,  
