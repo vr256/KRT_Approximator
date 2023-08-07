@@ -6,12 +6,11 @@ import numpy as np
 from PIL import Image
 from sklearn.metrics import mean_squared_error as mse
 
+from app_state import AppState
 from solution import main_solution
+from tools.config import LOC_TRANS, OPT_TRANS, POL_TRANS, THEME_TRANS
 from utils import convert_polynomials
 
-CURRENT_THEME = None
-CURRENT_POLYNOM = "Ерміта"
-CURRENT_METHOD = "Adam"
 CURRENT_PRED = {}
 
 
@@ -66,14 +65,12 @@ def change_func(y: str):
     make_plots()
 
 
-def change_polynom(polynom: str):
-    global CURRENT_POLYNOM
-    CURRENT_POLYNOM = polynom
+def change_polynom(new_pol: str):
+    AppState.pol = POL_TRANS[new_pol].value
 
 
-def change_method(method: str):
-    global CURRENT_METHOD
-    CURRENT_METHOD = method
+def change_method(new_opt: str):
+    AppState.opt = OPT_TRANS[new_opt].value
 
 
 def calculate_y():
@@ -110,12 +107,14 @@ def calculate_y():
 # Appearance
 
 
-def change_appearance_mode_event(new_appearance_mode: str):
-    global CURRENT_THEME
-    trans = {"Світла": "Light",
-             "Темна": "Dark"}
-    customtkinter.set_appearance_mode(trans[new_appearance_mode])
-    CURRENT_THEME = trans[new_appearance_mode]
+def change_theme(new_theme: str):
+    AppState.theme = THEME_TRANS[new_theme].value
+    customtkinter.set_appearance_mode(AppState.theme)
+
+
+def change_locale(new_loc: str):
+    AppState.lang = LOC_TRANS[new_loc].value
+    APP.update_locale()
 
 
 def update_y_selector():

@@ -1,12 +1,27 @@
 {
-    "app": {
+    "main_view": {
         "title": "Hierarchical approximator",
         "vectorView": "Vectors",
         "polynomView": "Polynomials",
-        "additionalView": "Miscellaneous",
+        "misclView": "Miscellaneous",
         "inputView": "Input"
     },
+    "result_view": {
+        "info": "Functions approximan-\ntion using hierarchical\npolynomial model",
+        "header": "About app",
+        "theme_caption": "Theme:",
+        "themes": ["Light", "Dark"],
+        "locale_caption": "Language",
+        "locales": ["English", "Ukrainian"],
+        "plot_caption": "Plot:",
+        "find_approx": "Find approximation",
+        "tabs": {
+            "res_tab": "Results",
+            "plot_tab": "Plot"
+        }
+    },
     "config_view": {
+        "optimizer_caption": "Gradient descent optimizer:",
         "optimizers": ["Adam",
                       "SGD",
                       "Nesterov",
@@ -15,14 +30,11 @@
         "polynomials": ["Hermite",
                         "Legendre",
                         "Laguerre",
-                        "Chebyshev"]
-    },
-    "result_view": {
-        "info": "Functions approximan-\ntion using hierarchical\npolynomial model",
-        "header": "About app",
-        "theme_caption": "Theme:",
-        "themes": ["Light", "Dark"],
-        "plot_caption": "Function plot:"
-
+                        "Chebyshev"],
+        "dim": "Dimensionality of",
+        "pol_kind": "Polynomials:",
+        "pow": "Power of", 
+        "input_file": "Input data file",
+        "output_file": "Output data file"  
     }
 }
