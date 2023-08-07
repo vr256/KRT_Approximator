@@ -7,11 +7,12 @@ sys.path.insert(1, ROOT)
 
 
 from event import init_app_event
+from tools.config import LOGO_PATH
 from views import App
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     app = App()
-    app.iconbitmap("image/logo.ico")
+    app.iconbitmap(LOGO_PATH)
     init_app_event(app)
     app.mainloop()
