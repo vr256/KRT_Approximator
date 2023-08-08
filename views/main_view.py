@@ -15,15 +15,15 @@ class App(customtkinter.CTk):
     def __init__(self):
         # * to avoid circular imports
         from views import (
+            Approximator,
             InputView,
             MainTabview,
             MiscView,
             Optimizer,
+            PlotSelector,
             PolynomView,
             Sidebar,
             VectorView,
-            YCalculator,
-            YSelector,
         )
 
         super().__init__()
@@ -42,10 +42,10 @@ class App(customtkinter.CTk):
 
         # contents
         self.sidebar = Sidebar(master=self, width=130, corner_radius=0)
-        self.y_selector = YSelector(master=self)
-        self.calculate_y = YCalculator(master=self)
+        self.plot_selector = PlotSelector(master=self)
+        self.approximator = Approximator(master=self)
         self.main_tabview = MainTabview(master=self, width=440)
-        self.system_solver = Optimizer(master=self)
+        self.optimizer = Optimizer(master=self)
         self.vector_view = VectorView(
             master=self,
             label_text=self.loc["vectorView"],
@@ -65,10 +65,10 @@ class App(customtkinter.CTk):
 
         self.widgets = (
             self.sidebar,
-            self.y_selector,
-            self.calculate_y,
+            self.approximator,
+            self.plot_selector,
             self.main_tabview,
-            self.system_solver,
+            self.optimizer,
             self.vector_view,
             self.polynom_view,
             self.misc_view,

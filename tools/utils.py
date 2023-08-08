@@ -19,6 +19,6 @@ def load_locale(path):
     # * to avoid circular imports
     from tools.config import AppState
 
-    with open(AppState.lang, "r", encoding="utf-8") as file:
+    with open(AppState().lang, "r", encoding="utf-8") as file:
         loc = json.load(file)[path]
         return loc

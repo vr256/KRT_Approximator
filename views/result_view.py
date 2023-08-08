@@ -4,13 +4,15 @@ import tkinter
 import customtkinter
 from PIL import Image
 
-from event import (
-    calculate_y,
-    change_func,
+from controllers import (
+    approximate,
+    change_dims,
+    change_latex,
     change_locale,
+    change_plot,
+    change_pol_degrees,
     change_theme,
     make_plots,
-    toggle_render,
 )
 from models.model import Locale, Theme
 from tools.config import PATH_DARK, PATH_LIGHT, AppState
@@ -22,6 +24,7 @@ current_module = os.path.splitext(os.path.basename(__file__))[0]
 class Sidebar(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._master = master
         self.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.grid_rowconfigure(4, weight=1)
         self.loc = load_locale(current_module)
@@ -47,7 +50,7 @@ class Sidebar(customtkinter.CTkFrame):
         self.locale_optionemenu = customtkinter.CTkOptionMenu(
             self,
             values=self.loc["locales"],
-            command=change_locale,
+            command=self.switch_locale,
         )
         self.locale_optionemenu.grid(row=4, column=0, padx=10, pady=(0, 10))
 
@@ -70,6 +73,10 @@ class Sidebar(customtkinter.CTkFrame):
         )
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=10, pady=(0, 10))
 
+    def switch_locale(self, new_loc: str):
+        change_locale(new_loc)
+        self._master.update_locale()
+
     def update_locale(self):
         self.loc = load_locale(current_module)
         self.logo_label.configure(text=self.loc["header"])
@@ -77,18 +84,19 @@ class Sidebar(customtkinter.CTkFrame):
 
         self.locale_label.configure(text=self.loc["locale_caption"])
         self.locale_optionemenu.configure(values=self.loc["locales"])
-        selected_loc_index = [e.value for e in Locale].index(AppState.lang)
+        selected_loc_index = [e.value for e in Locale].index(AppState().lang)
         self.locale_optionemenu.set(self.loc["locales"][selected_loc_index])
 
         self.appearance_mode_label.configure(text=self.loc["theme_caption"])
         self.appearance_mode_optionemenu.configure(values=self.loc["themes"])
-        selected_theme_index = [e.value for e in Theme].index(AppState.theme)
+        selected_theme_index = [e.value for e in Theme].index(AppState().theme)
         self.appearance_mode_optionemenu.set(self.loc["themes"][selected_theme_index])
 
 
-class YSelector(customtkinter.CTkFrame):
+class PlotSelector(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._master = master
         self.loc = load_locale(current_module)
         self.grid(row=3, column=1, sticky="nsew", padx=(20, 0), pady=10)
 
@@ -102,7 +110,7 @@ class YSelector(customtkinter.CTkFrame):
             self,
             variable=self.cur_y,
             values=["Y1", "Y2", "Y3", "Y4"],
-            command=change_func,
+            command=self.update_plot,
         )
         self.plot_y_function_optionmenu.grid(row=2, column=2, padx=10, pady=5)
 
@@ -112,7 +120,7 @@ class YSelector(customtkinter.CTkFrame):
         self.render_var = customtkinter.StringVar(value="off")
         self.latex_checkbox = customtkinter.CTkCheckBox(
             self,
-            command=toggle_render,
+            command=self.update_latex,
             text="",
             variable=self.render_var,
             onvalue="on",
@@ -120,23 +128,71 @@ class YSelector(customtkinter.CTkFrame):
         )
         self.latex_checkbox.grid(row=2, column=4, padx=5, pady=5)
 
+    def update_plot(self, new_plot: str):
+        self.cur_y.set(new_plot)
+        change_plot(new_plot)
+        plot_image = self._master.main_tabview.load_plot()
+        self._master.main_tabview.results_plot.configure(image=plot_image)
+        self._master.main_tabview.results_plot.pack(
+            side="bottom",
+            fill="both",
+            expand="yes",
+        )
+
+    def update_latex(self):
+        change_latex(self.render_var.get() == "on")
+        self._master.main_tabview.results_textbox.delete("1.0", customtkinter.END)
+        self._master.main_tabview.results_textbox.insert(
+            "0.0",
+            self._master.main_tabview.latex
+            if AppState().latex
+            else self._master.main_tabview.plain_text,
+        )
+        plot_image = self._master.main_tabview.load_plot()
+        self._master.main_tabview.results_plot.configure(image=plot_image)
+        self._master.main_tabview.results_plot.pack(
+            side="bottom",
+            fill="both",
+            expand="yes",
+        )
+
     def update_locale(self):
         self.loc = load_locale(current_module)
         self.label_y_function_selector.configure(text=self.loc["plot_caption"])
 
 
-class YCalculator(customtkinter.CTkFrame):
+class Approximator(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._master = master
         self.loc = load_locale(current_module)
         self.grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
         self.calculate_y_button = customtkinter.CTkButton(
             self,
             text=self.loc["find_approx"],
-            command=calculate_y,
+            command=self.find_approx,
         )
         self.calculate_y_button.grid(row=0, padx=(35, 10), pady=5, sticky="nsew")
         self.calculate_y_button.pack(side="bottom", fill="both", expand="yes")
+
+    def find_approx(self):
+        degs = [
+            int(self._master.polynom_view.__dict__[f"X{i}_deg"].get())
+            for i in range(1, 3 + 1)
+        ]
+        dims = [
+            int(self._master.vector_view.entry_Y_dim.get()),
+            int(self._master.vector_view.entry_X1_dim.get()),
+            int(self._master.vector_view.entry_X2_dim.get()),
+            int(self._master.vector_view.entry_X3_dim.get()),
+        ]
+        change_pol_degrees(degs)
+        change_dims(dims)
+        (
+            self._master.main_tabview.plain_text,
+            self._master.main_tabview.latex,
+        ) = approximate()
+        self._master.plot_selector.update_latex()
 
     def update_locale(self):
         self.loc = load_locale(current_module)
@@ -167,18 +223,23 @@ class MainTabview(customtkinter.CTkTabview):
         self.results_textbox.grid(row=0, padx=10, pady=5, sticky="nsew")
         self.results_textbox.pack(side="bottom", fill="both", expand="yes")
 
-        make_plots(key=2)
-        my_image = customtkinter.CTkImage(
+        plot_image = self.load_plot()
+        self.results_plot = customtkinter.CTkLabel(
+            self.tab(self.plot_tab_caption),
+            text="",
+            image=plot_image,
+        )
+        self.results_plot.pack(side="bottom", fill="both", expand="yes")
+
+    def load_plot(self):
+        """Load plot from file to image object"""
+        make_plots()
+        plot_image = customtkinter.CTkImage(
             light_image=Image.open(PATH_LIGHT),
             dark_image=Image.open(PATH_DARK),
             size=(520, 450),
         )
-        self.results_plot = customtkinter.CTkLabel(
-            self.tab(self.plot_tab_caption),
-            text="",
-            image=my_image,
-        )
-        self.results_plot.pack(side="bottom", fill="both", expand="yes")
+        return plot_image
 
     def update_locale(self):
         selected_tab = self.get()
@@ -205,16 +266,11 @@ class MainTabview(customtkinter.CTkTabview):
         self.results_textbox.grid(row=0, padx=10, pady=5, sticky="nsew")
         self.results_textbox.pack(side="bottom", fill="both", expand="yes")
 
-        make_plots(key=2)
-        my_image = customtkinter.CTkImage(
-            light_image=Image.open(PATH_LIGHT),
-            dark_image=Image.open(PATH_DARK),
-            size=(520, 450),
-        )
+        plot_image = self.load_plot()
         self.results_plot = customtkinter.CTkLabel(
             self.tab(self.plot_tab_caption),
             text="",
-            image=my_image,
+            image=plot_image,
         )
         self.results_plot.pack(side="bottom", fill="both", expand="yes")
         self.set(self.loc["tabs"][selected_tab_name])

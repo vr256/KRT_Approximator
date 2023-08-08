@@ -9,8 +9,8 @@ from numpy.polynomial.legendre import Legendre
 
 
 class Locale(Enum):
-    ENG = 'locales/eng.json'
-    UKR = 'locales/ukr.json'
+    ENG = "locales/eng.json"
+    UKR = "locales/ukr.json"
 
     def translate(option: str):
         match option:
@@ -21,8 +21,8 @@ class Locale(Enum):
 
 
 class Theme(Enum):
-    Light = 'Light'
-    Dark = 'Dark'
+    Light = "Light"
+    Dark = "Dark"
 
     def translate(option: str):
         match option:
@@ -69,3 +69,12 @@ class Polynomial(Enum):
                 return Polynomial.Laguerre
             case "Chebyshev" | "Чебишова":
                 return Polynomial.Chebyshev
+
+    def alias_repr(self):
+        match self:
+            case Polynomial.Hermite:
+                return "H"
+            case Polynomial.Legendre | Polynomial.Laguerre:
+                return "L"
+            case Polynomial.Chebyshev:
+                return "T"

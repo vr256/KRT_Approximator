@@ -33,8 +33,13 @@
                         "Chebyshev"],
         "dim": "Dimensionality of",
         "pol_kind": "Polynomials:",
-        "pow": "Power of", 
+        "pow": "Degree of", 
         "input_file": "Input data file",
         "output_file": "Output data file"  
+    },
+    "result": {
+        "true_label": "True",
+        "approx_label": "Approximated",
+        "mse": "Mean squared error"
     }
 }
