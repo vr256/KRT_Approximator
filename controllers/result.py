@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error as mse
 
 from maths import main_solution
-from models.model import Locale, Theme
+from models import Locale, Theme
 from tools.config import PATH_DARK, PATH_LIGHT, AppState
 from tools.utils import load_locale
 
-from .formatter import format_input, str_lam_coeffs
+from .formatter import format_input, get_text_results
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -65,18 +65,19 @@ def make_plots():
 
 
 def approximate():
-    with open(AppState().input_file, "r") as file:
-        input_str = file.read()
-
-    AppState().x_data, AppState().y_true = format_input(input_str)
-    res_y, res_lam, res_a, res_c = main_solution(
+    AppState().x_data, AppState().y_true = format_input()
+    (
+        AppState().y_pred,
+        AppState().res_lam,
+        AppState().res_a,
+        AppState().res_c,
+    ) = main_solution(
         AppState().x_data,
         AppState().y_true,
         method=AppState().opt,
         polynom=AppState().pol,
         degs=AppState().pol_degrees,
     )
-    AppState().y_pred = res_y
     make_plots()
-    plain_text, latex = str_lam_coeffs(res_lam, pol=AppState().pol)
+    plain_text, latex = get_text_results()
     return plain_text, latex

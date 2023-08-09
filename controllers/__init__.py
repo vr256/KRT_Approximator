@@ -6,6 +6,7 @@ from .config import (
     change_pol_degrees,
     change_polynom,
 )
+from .formatter import get_text_results
 from .result import (
     approximate,
     change_latex,

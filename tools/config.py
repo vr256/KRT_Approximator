@@ -23,7 +23,7 @@ def init_array():
 @dataclass
 class AppState:
     # * to avoid circular imports
-    from models.model import Locale, Optimizer, Polynomial, Theme
+    from models import Locale, Optimizer, Polynomial, Theme
 
     # Option menus
     lang: Locale = field(default=Locale.ENG.value)
@@ -45,3 +45,6 @@ class AppState:
     x_data: np.ndarray = field(init=False, repr=False)
     y_true: np.ndarray = field(default_factory=init_array, repr=False)
     y_pred: np.ndarray = field(default_factory=init_array, repr=False)
+    res_lam: np.ndarray = field(init=False, repr=False)
+    res_a: np.ndarray = field(init=False, repr=False)
+    res_c: np.ndarray = field(init=False, repr=False)

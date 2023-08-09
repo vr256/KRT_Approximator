@@ -11,7 +11,7 @@
         "header": "About app",
         "theme_caption": "Theme:",
         "themes": ["Light", "Dark"],
-        "locale_caption": "Language",
+        "locale_caption": "Language:",
         "locales": ["English", "Ukrainian"],
         "plot_caption": "Plot:",
         "find_approx": "Find approximation",
@@ -41,5 +41,11 @@
         "true_label": "True",
         "approx_label": "Approximated",
         "mse": "Mean squared error"
+    },
+    "formatter": {
+        "ort_pol_message": "Functions approximated via",
+        "possesive_case": "'s polynomials",
+        "conv_pol_message": "Functions approximated via ordinary polynomials",
+        "coef_matrix": "Matrix"
     }
 }

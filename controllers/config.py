@@ -1,4 +1,4 @@
-from models.model import Optimizer, Polynomial
+from models import Optimizer, Polynomial
 from tools.config import AppState
 
 

@@ -1,11 +1,12 @@
 from enum import Enum
 from functools import partial
 
+import numpy as np
 import tensorflow as tf
-from numpy.polynomial.chebyshev import Chebyshev
-from numpy.polynomial.hermite import Hermite
-from numpy.polynomial.laguerre import Laguerre
-from numpy.polynomial.legendre import Legendre
+from numpy.polynomial.chebyshev import Chebyshev, cheb2poly
+from numpy.polynomial.hermite import Hermite, herm2poly
+from numpy.polynomial.laguerre import Laguerre, lag2poly
+from numpy.polynomial.legendre import Legendre, leg2poly
 
 
 class Locale(Enum):
@@ -72,9 +73,20 @@ class Polynomial(Enum):
 
     def alias_repr(self):
         match self:
-            case Polynomial.Hermite:
+            case Polynomial.Hermite.value:
                 return "H"
-            case Polynomial.Legendre | Polynomial.Laguerre:
+            case Polynomial.Legendre.value | Polynomial.Laguerre.value:
                 return "L"
-            case Polynomial.Chebyshev:
+            case Polynomial.Chebyshev.value:
                 return "T"
+
+    def convert(self, x: np.ndarray):
+        match self:
+            case Polynomial.Hermite.value:
+                return herm2poly(self(x).coef)
+            case Polynomial.Legendre.value:
+                return leg2poly(self(x).coef)
+            case Polynomial.Laguerre.value:
+                return lag2poly(self(x).coef)
+            case Polynomial.Chebyshev.value:
+                return cheb2poly(self(x).coef)

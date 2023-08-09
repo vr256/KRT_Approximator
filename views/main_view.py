@@ -32,6 +32,7 @@ class App(customtkinter.CTk):
         # window
         self.title(self.loc["title"])
         self.geometry(f"{1400}x{600}")
+        self.resizable(False, False)
 
         # grid layout
         self.grid_columnconfigure(1, weight=20)
@@ -42,8 +43,8 @@ class App(customtkinter.CTk):
 
         # contents
         self.sidebar = Sidebar(master=self, width=130, corner_radius=0)
-        self.plot_selector = PlotSelector(master=self)
-        self.approximator = Approximator(master=self)
+        self.plot_selector = PlotSelector(master=self, width=300)
+        self.approximator = Approximator(master=self, width=140)
         self.main_tabview = MainTabview(master=self, width=440)
         self.optimizer = Optimizer(master=self)
         self.vector_view = VectorView(

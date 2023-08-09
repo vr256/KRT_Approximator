@@ -10,36 +10,11 @@ from controllers import (
     change_output_file,
     change_polynom,
 )
-from models.model import Polynomial
+from models import Polynomial
 from tools.config import SEARCH_ICON, AppState
 from tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
-
-
-class Optimizer(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.loc = load_locale(current_module)
-        self.grid(row=3, column=3, columnspan=2, sticky="nsew", padx=10, pady=10)
-        self.label_system_solution_selector = customtkinter.CTkLabel(
-            self,
-            text=self.loc["optimizer_caption"],
-        )
-        self.label_system_solution_selector.grid(row=2, column=1, padx=(20, 5), pady=5)
-        self.opt_system_method = customtkinter.CTkOptionMenu(
-            self,
-            values=self.loc["optimizers"],
-            command=change_optimizer,
-        )
-        self.opt_system_method.grid(row=2, column=2, padx=10, pady=5)
-
-    def update_locale(self):
-        self.loc = load_locale(current_module)
-        self.label_system_solution_selector.configure(
-            text=self.loc["optimizer_caption"],
-        )
-        self.opt_system_method.configure(values=self.loc["optimizers"])
 
 
 class VectorView(customtkinter.CTkScrollableFrame):
@@ -47,7 +22,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
         super().__init__(master, **kwargs)
         self.loc = load_locale(current_module)
         self._scrollbar.configure(width=0)
-        self.grid(row=0, column=3, padx=(5, 5), pady=(30, 5), sticky="nsew")
+        self.grid(row=0, column=3, padx=(8, 4), pady=(27, 4), sticky="nsew")
 
         self.Y_dim = tkinter.StringVar(value="4")
         self.label_Y_dim = customtkinter.CTkLabel(self, text=self.loc["dim"] + " Y:")
@@ -128,29 +103,18 @@ class VectorView(customtkinter.CTkScrollableFrame):
         self.label_Y_dim.configure(text=self.loc["dim"] + " Y:")
 
 
-class MiscView(customtkinter.CTkScrollableFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.loc = load_locale(current_module)
-        self._scrollbar.configure(width=0)
-        self.grid(row=0, column=4, padx=(5, 10), pady=(30, 5), sticky="nsew")
-
-    def update_locale(self):
-        pass
-
-
 class PolynomView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.loc = load_locale(current_module)
         self._scrollbar.configure(width=0)
-        self.grid(row=1, column=3, padx=4, pady=(10, 5), sticky="nsew")
+        self.grid(row=1, column=3, padx=(8, 4), pady=(8, 0), sticky="nsew")
 
         self.label_polynom_selector = customtkinter.CTkLabel(
             self,
             text=self.loc["pol_kind"],
         )
-        self.label_polynom_selector.grid(row=1, column=0, padx=(5, 5), pady=5)
+        self.label_polynom_selector.grid(row=1, column=0, padx=(5, 5), pady=(10, 5))
         self.opt_polynom = customtkinter.CTkOptionMenu(
             self,
             values=self.loc["polynomials"],
@@ -192,12 +156,23 @@ class PolynomView(customtkinter.CTkScrollableFrame):
             self.__dict__[f"label_X{i}_deg"].configure(text=self.loc["pow"] + f" X{i}:")
 
 
+class MiscView(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.loc = load_locale(current_module)
+        self._scrollbar.configure(width=0)
+        self.grid(row=0, column=4, padx=(4, 8), pady=(27, 4), sticky="nsew")
+
+    def update_locale(self):
+        pass
+
+
 class InputView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.loc = load_locale(current_module)
         self._scrollbar.configure(width=0)
-        self.grid(row=1, column=4, padx=(5, 10), pady=(10, 5), sticky="nsew")
+        self.grid(row=1, column=4, padx=(4, 8), pady=(8, 0), sticky="nsew")
 
         self.label_input_file = customtkinter.CTkLabel(
             self,
@@ -270,3 +245,28 @@ class InputView(customtkinter.CTkScrollableFrame):
         self.loc = load_locale(current_module)
         self.label_input_file.configure(text=self.loc["input_file"])
         self.label_output_file.configure(text=self.loc["output_file"])
+
+
+class Optimizer(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.loc = load_locale(current_module)
+        self.grid(row=3, column=3, columnspan=2, sticky="nsew", padx=8, pady=12)
+        self.label_system_solution_selector = customtkinter.CTkLabel(
+            self,
+            text=self.loc["optimizer_caption"],
+        )
+        self.label_system_solution_selector.grid(row=2, column=1, padx=(20, 5), pady=5)
+        self.opt_system_method = customtkinter.CTkOptionMenu(
+            self,
+            values=self.loc["optimizers"],
+            command=change_optimizer,
+        )
+        self.opt_system_method.grid(row=2, column=2, padx=10, pady=5)
+
+    def update_locale(self):
+        self.loc = load_locale(current_module)
+        self.label_system_solution_selector.configure(
+            text=self.loc["optimizer_caption"],
+        )
+        self.opt_system_method.configure(values=self.loc["optimizers"])
