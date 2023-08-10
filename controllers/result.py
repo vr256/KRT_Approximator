@@ -9,7 +9,7 @@ from models import Locale, Theme
 from tools.config import PATH_DARK, PATH_LIGHT, AppState
 from tools.utils import load_locale
 
-from .formatter import format_input, get_text_results
+from .formatter import format_txt_input, get_text_results
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -65,7 +65,7 @@ def make_plots():
 
 
 def approximate():
-    AppState().x_data, AppState().y_true = format_input()
+    AppState().x_data, AppState().y_true = format_txt_input()
     (
         AppState().y_pred,
         AppState().res_lam,

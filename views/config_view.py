@@ -11,7 +11,7 @@ from controllers import (
     change_polynom,
 )
 from models import Polynomial
-from tools.config import SEARCH_ICON, AppState
+from tools.config import ADD_ICON, REMOVE_ICON, SEARCH_ICON, AppState
 from tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
@@ -20,13 +20,30 @@ current_module = os.path.splitext(os.path.basename(__file__))[0]
 class VectorView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._master = master
         self.loc = load_locale(current_module)
-        self._scrollbar.configure(width=0)
+        self._scrollbar.configure(width=14)
         self.grid(row=0, column=3, padx=(8, 4), pady=(27, 4), sticky="nsew")
 
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=2)
+        self.columnconfigure(2, weight=1)
+
+        add_image = customtkinter.CTkImage(
+            light_image=Image.open(ADD_ICON),
+            dark_image=Image.open(ADD_ICON),
+        )
+        self.remove_image = customtkinter.CTkImage(
+            light_image=Image.open(REMOVE_ICON),
+            dark_image=Image.open(REMOVE_ICON),
+        )
+
         self.Y_dim = tkinter.StringVar(value="4")
-        self.label_Y_dim = customtkinter.CTkLabel(self, text=self.loc["dim"] + " Y:")
-        self.label_Y_dim.grid(row=2, column=0, padx=5, pady=10, sticky="e")
+        self.label_Y_dim = customtkinter.CTkLabel(
+            self,
+            text=self.loc["dim"] + " Y:  ",
+        )
+        self.label_Y_dim.grid(row=2, column=0, padx=5, pady=3, sticky="e")
         self.entry_Y_dim = customtkinter.CTkEntry(
             self,
             width=40,
@@ -35,15 +52,30 @@ class VectorView(customtkinter.CTkScrollableFrame):
         self.entry_Y_dim.grid(
             row=2,
             column=1,
-            padx=(5, 30),
-            pady=10,
+            padx=(5, 0),
+            pady=7,
             sticky="w",
-            columnspan=1,
+        )
+        self.button_remove_Y = customtkinter.CTkButton(
+            self,
+            image=self.remove_image,
+            width=8,
+            text="",
+            command=self.remove_vector,
+            state="disabled",
+            fg_color="gray",
+        )
+        self.button_remove_Y.grid(
+            row=2,
+            column=2,
+            padx=(7, 10),
+            pady=7,
+            sticky="we",
         )
 
         self.X1_dim = tkinter.StringVar(value="2")
         self.label_X1_dim = customtkinter.CTkLabel(self, text=self.loc["dim"] + " X1:")
-        self.label_X1_dim.grid(row=3, column=0, padx=5, pady=10, sticky="e")
+        self.label_X1_dim.grid(row=3, column=0, padx=5, pady=3, sticky="e")
         self.entry_X1_dim = customtkinter.CTkEntry(
             self,
             width=40,
@@ -52,77 +84,167 @@ class VectorView(customtkinter.CTkScrollableFrame):
         self.entry_X1_dim.grid(
             row=3,
             column=1,
-            padx=(5, 30),
+            padx=5,
             pady=10,
             sticky="w",
-            columnspan=1,
         )
-
-        self.X2_dim = tkinter.StringVar(value="2")
-        self.label_X2_dim = customtkinter.CTkLabel(self, text=self.loc["dim"] + " X2:")
-        self.label_X2_dim.grid(row=4, column=0, padx=5, pady=10, sticky="e")
-        self.entry_X2_dim = customtkinter.CTkEntry(
+        self.button_remove_X1 = customtkinter.CTkButton(
             self,
-            width=40,
-            textvariable=self.X2_dim,
+            image=self.remove_image,
+            width=8,
+            text="",
+            command=self.remove_vector,
+            state="disabled",
+            fg_color="gray",
         )
-        self.entry_X2_dim.grid(
-            row=4,
-            column=1,
-            padx=(5, 30),
-            pady=10,
-            sticky="w",
-            columnspan=1,
+        self.button_remove_X1.grid(
+            row=3,
+            column=2,
+            padx=(7, 10),
+            pady=7,
+            sticky="we",
         )
 
-        self.X3_dim = tkinter.StringVar(value="3")
-        self.label_X3_dim = customtkinter.CTkLabel(self, text=self.loc["dim"] + " X3:")
-        self.label_X3_dim.grid(row=5, column=0, padx=5, pady=10, sticky="e")
-        self.entry_X3_dim = customtkinter.CTkEntry(
+        for i in range(2, AppState().num_x + 1):
+            self.__dict__[f"X{i}_dim"] = tkinter.StringVar(value="2")
+            self.__dict__[f"label_X{i}_dim"] = customtkinter.CTkLabel(
+                self,
+                text=self.loc["dim"] + f" X{i}:",
+            )
+            self.__dict__[f"label_X{i}_dim"].grid(
+                row=2 + i,
+                column=0,
+                padx=5,
+                pady=3,
+                sticky="e",
+            )
+            self.__dict__[f"entry_X{i}_dim"] = customtkinter.CTkEntry(
+                self,
+                width=40,
+                textvariable=self.__dict__[f"X{i}_dim"],
+            )
+            self.__dict__[f"entry_X{i}_dim"].grid(
+                row=2 + i,
+                column=1,
+                padx=5,
+                pady=10,
+                sticky="w",
+            )
+            self.__dict__[f"button_remove_X{i}"] = customtkinter.CTkButton(
+                self,
+                image=self.remove_image,
+                width=8,
+                text="",
+                command=self.remove_vector,
+            )
+            self.__dict__[f"button_remove_X{i}"].grid(
+                row=2 + i,
+                column=2,
+                padx=(7, 10),
+                pady=7,
+                sticky="we",
+            )
+
+        self.button_add_vector = customtkinter.CTkButton(
             self,
-            width=40,
-            textvariable=self.X3_dim,
+            image=add_image,
+            width=70,
+            text="",
+            command=self.add_vector,
         )
-        self.entry_X3_dim.grid(
-            row=5,
-            column=1,
-            padx=(5, 30),
-            pady=10,
-            sticky="w",
-            columnspan=1,
+        self.button_add_vector.grid(
+            row=3 + AppState().num_x,
+            column=0,
+            columnspan=3,
+            padx=12,
+            pady=7,
+            sticky="we",
         )
-
-        self.columnconfigure(0, weight=2)
-        self.columnconfigure(1, weight=1)
 
     def update_locale(self):
         self.loc = load_locale(current_module)
-        self.label_X1_dim.configure(text=self.loc["dim"] + " X1:")
-        self.label_X2_dim.configure(text=self.loc["dim"] + " X2:")
-        self.label_X3_dim.configure(text=self.loc["dim"] + " X3:")
-        self.label_Y_dim.configure(text=self.loc["dim"] + " Y:")
+        for i in range(1, AppState().num_x + 1):
+            self.__dict__[f"label_X{i}_dim"].configure(text=self.loc["dim"] + f" X{i}:")
+        self.label_Y_dim.configure(text=self.loc["dim"] + " Y:  ")
+
+    def add_vector(self):
+        AppState().num_x += 1
+        # Shifting add button
+        self.button_add_vector.grid(
+            row=3 + AppState().num_x,
+            column=0,
+            columnspan=3,
+            padx=12,
+            pady=7,
+            sticky="we",
+        )
+        # Adding X vector
+        self.__dict__[f"X{AppState().num_x}_dim"] = tkinter.StringVar(value="2")
+        self.__dict__[f"label_X{AppState().num_x}_dim"] = customtkinter.CTkLabel(
+            self,
+            text=self.loc["dim"] + f" X{AppState().num_x}:",
+        )
+        self.__dict__[f"label_X{AppState().num_x}_dim"].grid(
+            row=2 + AppState().num_x,
+            column=0,
+            padx=5,
+            pady=3,
+            sticky="e",
+        )
+        self.__dict__[f"entry_X{AppState().num_x}_dim"] = customtkinter.CTkEntry(
+            self,
+            width=40,
+            textvariable=self.__dict__[f"X{AppState().num_x}_dim"],
+        )
+        self.__dict__[f"entry_X{AppState().num_x}_dim"].grid(
+            row=2 + AppState().num_x,
+            column=1,
+            padx=5,
+            pady=10,
+            sticky="w",
+        )
+        self.__dict__[f"button_remove_X{AppState().num_x}"] = customtkinter.CTkButton(
+            self,
+            image=self.remove_image,
+            width=8,
+            text="",
+            command=self.remove_vector,
+        )
+        self.__dict__[f"button_remove_X{AppState().num_x}"].grid(
+            row=2 + AppState().num_x,
+            column=2,
+            padx=(7, 10),
+            pady=7,
+            sticky="we",
+        )
+        # Revise polynomial view
+        self._master.polynom_view.update_after_add()
+
+    def remove_vector(self):
+        self._master.polynom_view.update_after_remove()
 
 
 class PolynomView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.loc = load_locale(current_module)
-        self._scrollbar.configure(width=0)
+        self._scrollbar.configure(width=14)
         self.grid(row=1, column=3, padx=(8, 4), pady=(8, 0), sticky="nsew")
 
         self.label_polynom_selector = customtkinter.CTkLabel(
             self,
             text=self.loc["pol_kind"],
         )
-        self.label_polynom_selector.grid(row=1, column=0, padx=(5, 5), pady=(10, 5))
+        self.label_polynom_selector.grid(row=1, column=0, padx=(30, 5), pady=(10, 5))
         self.opt_polynom = customtkinter.CTkOptionMenu(
             self,
             values=self.loc["polynomials"],
             command=change_polynom,
+            width=120,
         )
-        self.opt_polynom.grid(row=1, column=1, pady=5, padx=(0, 5))
+        self.opt_polynom.grid(row=1, column=1, padx=(0, 5), pady=5)
 
-        for i in range(1, 3 + 1):
+        for i in range(1, AppState().num_x + 1):
             self.__dict__[f"X{i}_deg"] = tkinter.StringVar(value="3")
             self.__dict__[f"label_X{i}_deg"] = customtkinter.CTkLabel(
                 self,
@@ -131,7 +253,7 @@ class PolynomView(customtkinter.CTkScrollableFrame):
             self.__dict__[f"label_X{i}_deg"].grid(
                 row=1 + i,
                 column=0,
-                padx=(0, 5),
+                padx=(30, 10),
                 pady=10,
             )
             self.__dict__[f"entry_X{i}_deg"] = customtkinter.CTkEntry(
@@ -142,6 +264,7 @@ class PolynomView(customtkinter.CTkScrollableFrame):
             self.__dict__[f"entry_X{i}_deg"].grid(
                 row=1 + i,
                 column=1,
+                padx=(0, 5),
                 pady=10,
                 sticky="w",
             )
@@ -152,8 +275,36 @@ class PolynomView(customtkinter.CTkScrollableFrame):
         self.opt_polynom.configure(values=self.loc["polynomials"])
         selected_pol_index = [e.value for e in Polynomial].index(AppState().pol)
         self.opt_polynom.set(self.loc["polynomials"][selected_pol_index])
-        for i in range(1, 3 + 1):
+        for i in range(1, AppState().num_x + 1):
             self.__dict__[f"label_X{i}_deg"].configure(text=self.loc["pow"] + f" X{i}:")
+
+    def update_after_add(self):
+        self.__dict__[f"X{AppState().num_x}_deg"] = tkinter.StringVar(value="3")
+        self.__dict__[f"label_X{AppState().num_x}_deg"] = customtkinter.CTkLabel(
+            self,
+            text=self.loc["pow"] + f" X{AppState().num_x}:",
+        )
+        self.__dict__[f"label_X{AppState().num_x}_deg"].grid(
+            row=1 + AppState().num_x,
+            column=0,
+            padx=(23, 12),
+            pady=10,
+        )
+        self.__dict__[f"entry_X{AppState().num_x}_deg"] = customtkinter.CTkEntry(
+            self,
+            width=40,
+            textvariable=self.__dict__[f"X{AppState().num_x}_deg"],
+        )
+        self.__dict__[f"entry_X{AppState().num_x}_deg"].grid(
+            row=1 + AppState().num_x,
+            column=1,
+            padx=(0, 5),
+            pady=10,
+            sticky="w",
+        )
+
+    def update_after_remove(self):
+        pass
 
 
 class MiscView(customtkinter.CTkScrollableFrame):

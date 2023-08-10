@@ -12,6 +12,8 @@ customtkinter.set_default_color_theme("blue")
 PATH_LIGHT = "resources/images/image_light.png"
 PATH_DARK = "resources/images/image_dark.png"
 SEARCH_ICON = "resources/images/search_icon.png"
+ADD_ICON = "resources/images/add_icon.png"
+REMOVE_ICON = "resources/images/remove_icon.png"
 LOGO_PATH = "resources/images/logo.ico"
 
 
@@ -33,6 +35,8 @@ class AppState:
     plot: str = field(default="Y1")
 
     # Entry forms
+    num_y: int = field(default=4)
+    num_x: int = field(default=3)
     dims: tuple[int] = field(default=(4, 2, 2, 3))
     pol_degrees: tuple[int] = field(default=(3, 3, 3))
     input_file: str = field(init=False)

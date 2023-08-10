@@ -84,3 +84,12 @@ class App(customtkinter.CTk):
         self.input_view.configure(label_text=self.loc["inputView"])
         for widget in self.widgets:
             widget.update_locale()
+
+    def destroy(self):
+        self.after_cancel(self.after_id)
+        for widget in self.widgets:
+            if hasattr(widget, "after_id"):
+                self.after_cancel(
+                    widget.after_id,
+                )
+        super().destroy()

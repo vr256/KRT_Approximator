@@ -198,7 +198,9 @@ class PlotSelector(customtkinter.CTkFrame):
         self.render_label.grid(row=2, column=3, padx=(10, 5), pady=5)
 
         self.render_var = customtkinter.StringVar(value="off")
-        self.latex_checkbox = customtkinter.CTkCheckBox(
+
+        # Replace the checkbox with a switch
+        self.latex_switch = customtkinter.CTkSwitch(
             self,
             command=self.update_latex,
             text="",
@@ -206,7 +208,7 @@ class PlotSelector(customtkinter.CTkFrame):
             onvalue="on",
             offvalue="off",
         )
-        self.latex_checkbox.grid(row=2, column=4, padx=5, pady=5)
+        self.latex_switch.grid(row=2, column=4, padx=5, pady=5)
 
     def update_plot(self, new_plot: str):
         self.cur_y.set(new_plot)
@@ -244,6 +246,7 @@ class PlotSelector(customtkinter.CTkFrame):
             self._master.main_tabview.plain_text,
             self._master.main_tabview.latex,
         ) = get_text_results()
+        # Change the reference to latex_switch
         self.update_latex()
 
 

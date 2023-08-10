@@ -32,10 +32,11 @@
                         "Laguerre",
                         "Chebyshev"],
         "dim": "Dimensionality of",
-        "pol_kind": "Polynomials:",
+        "pol_kind": "Polynomials:   ",
         "pow": "Degree of", 
         "input_file": "Input data file",
-        "output_file": "Output data file"  
+        "output_file": "Output data file",  
+        "warnings": {}  
     },
     "result": {
         "true_label": "True",
@@ -46,6 +47,20 @@
         "ort_pol_message": "Functions approximated via",
         "possesive_case": "'s polynomials",
         "conv_pol_message": "Functions approximated via ordinary polynomials",
-        "coef_matrix": "Matrix"
+        "coef_matrix": "Matrix",
+        "text": {
+            "phi": "Ф",
+            "psi": "Ψ",
+            "x": "x",
+            "mul": "*",
+            "end": ""
+        },
+        "latex": {
+            "phi": "\\Phi_{",
+            "psi": "\\Psi",
+            "x": "x_{",
+            "mul": "\\cdot",
+            "end": "}"
+        }   
     }
 }

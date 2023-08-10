@@ -11,18 +11,15 @@ from tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
-# Plotting
-# TODO arbitrary N and M
-N = 3
-M = 4
+# TODO arbitrary AppState().num_x and AppState().num_y
 
 
-def format_input():
+def format_txt_input():
     with open(AppState().input_file, "r") as file:
         cur_input = file.read()
     x = {}
     y = {}
-    y_dim, x1_dim, x2_dim, x3_dim = AppState.dims
+    y_dim, x1_dim, x2_dim, x3_dim = AppState().dims
 
     for block in cur_input.split("\n\n"):
         if block != "":
@@ -56,42 +53,41 @@ def format_input():
 # printing results
 
 
+# TODO change name (include hierarchical level)
 def str_c_coeffs():
-    c = AppState().res_c
     loc = load_locale(current_module)
-    total = loc["coef_matrix"] + " C:\n\n"
-    plain_text, latex = "", ""
+    rendered_res = [loc["coef_matrix"] + " C:\n\n"] * 2
+    for r_ind, render in enumerate((loc["text"], loc["latex"])):
+        for ind, coef in enumerate(AppState().res_c):
+            res = (
+                f"{render['phi']}{ind + 1}{render['end']}  ("
+                + ", ".join(
+                    [
+                        f"{render['x']}{h}{render['end']}"
+                        for h in range(1, AppState().num_x)
+                    ],
+                )
+                + f", {render['x']}{AppState().num_x}{render['end']}) ="
+            )
+            for vec_id, val in enumerate(coef):
+                res += (
+                    f"{val.numpy()[0]:.4f}{render['mul']}"
+                    + f"{render['phi']}{ind + 1}{vec_id + 1}{render['end']}"
+                    + f"({render['x']}{vec_id + 1}{render['end']}) "
+                )
+            res = re.sub(r"( )(\d)", r"\1+ \2", res, count=len(res.split(" ")))
+            res = res.replace("=", "= ").replace("-", "- ").rstrip()
+            rendered_res[r_ind] += res + "\n\n"
 
-    for ind, coef in enumerate(c):
-        res = f"Ф{ind + 1}(" + ", ".join([f"x{h}" for h in range(1, N)]) + f", x{N}) ="
-        for vec_id, val in enumerate(coef):
-            res += f"{val.numpy()[0]:.4f}*Ф{ind + 1}{vec_id+ 1 }(x{vec_id + 1}) "
-        res = re.sub(r"( )(\d)", r"\1+ \2", res, count=len(res.split(" ")))
-        res = res.replace("=", "= ").replace("-", "- ").rstrip()
-        plain_text += res + "\n"
-
-    for ind, coef in enumerate(c):
-        res = (
-            f"\Phi_{{{ind + 1}}}("
-            + ", ".join([f"x_{{{h}}}" for h in range(1, N)])
-            + f", x_{{{N}}}) ="
-        )
-        for vec_id, val in enumerate(coef):
-            res += f"{val.numpy()[0]:.4f} \cdot Ф_{{{ind + 1}{vec_id + 1}}}(x_{{{vec_id + 1}}}) "
-        res = re.sub(r"( )(\d)", r"\1+ \2", res, count=len(res.split(" ")))
-        res = res.replace("=", "= ").replace("-", "- ").rstrip()
-        latex += res + "\n"
-
-    return total + plain_text + "\n", total + latex + "\n"
+    return [i + "\n" for i in rendered_res]
 
 
 def str_a_coeffs():
-    a = AppState().res_a
     loc = load_locale(current_module)
     total = loc["coef_matrix"] + " A:\n\n"
     plain_text, latex = "", ""
 
-    for ind, coef in enumerate(a):
+    for ind, coef in enumerate(AppState().res_a):
         for vec_id, x_vec in enumerate(coef):
             res = f"Ф{ind + 1}{vec_id + 1}(x{vec_id + 1}) ="
             for elem_id, val in enumerate(x_vec.numpy()):
@@ -103,7 +99,7 @@ def str_a_coeffs():
             total += res + "\n"
         plain_text += "\n"
 
-    for ind, coef in enumerate(a):
+    for ind, coef in enumerate(AppState().res_a):
         for vec_id, x_vec in enumerate(coef):
             res = f"\Phi_{{{ind + 1}{vec_id + 1}}}(x_{{{vec_id + 1}}}) ="
             for elem_id, val in enumerate(x_vec.numpy()):
@@ -128,7 +124,11 @@ def str_lam_coeffs():
     plain_text, latex = "", ""
 
     for ind, coef in enumerate(lam):
-        res = f"Ф{ind + 1}(" + ", ".join([f"x{h}" for h in range(1, N)]) + f", x{N}) ="
+        res = (
+            f"Ф{ind + 1}("
+            + ", ".join([f"x{h}" for h in range(1, AppState().num_x)])
+            + f", x{AppState().num_x}) ="
+        )
         for vec_id, x_vec in enumerate(coef):
             for elem_id, x_elem in enumerate(x_vec):
                 for deg, val in enumerate(x_elem.numpy()):
@@ -140,8 +140,8 @@ def str_lam_coeffs():
     for ind, coef in enumerate(lam):
         res = (
             f"\Phi_{{{ind + 1}}}("
-            + ", ".join([f"x_{{{h}}}" for h in range(1, N)])
-            + f", x_{{{N}}}) ="
+            + ", ".join([f"x_{{{h}}}" for h in range(1, AppState().num_x)])
+            + f", x_{{{AppState().num_x}}}) ="
         )
         for vec_id, x_vec in enumerate(coef):
             for elem_id, x_elem in enumerate(x_vec):
@@ -163,8 +163,8 @@ def str_lam_pol_coeffs():
     for ind, coef in enumerate(coeffs):
         res = (
             f"Ф{ind + 1}("
-            + ", ".join([f"x{h}" for h in range(1, N)])
-            + f", x{N}) ={biases[ind]:.4f} "
+            + ", ".join([f"x{h}" for h in range(1, AppState().num_x)])
+            + f", x{AppState().num_x}) ={biases[ind]:.4f} "
         )
         for vec_id, x_vec in enumerate(coef):
             for elem_id, x_elem in enumerate(x_vec):
@@ -177,8 +177,8 @@ def str_lam_pol_coeffs():
     for ind, coef in enumerate(coeffs):
         res = (
             f"\Phi_{{{ind + 1}}}("
-            + ", ".join([f"x_{{{h}}}" for h in range(1, N)])
-            + f", x_{{{N}}}) ={biases[ind]:.4f} "
+            + ", ".join([f"x_{{{h}}}" for h in range(1, AppState().num_x)])
+            + f", x_{{{AppState().num_x}}}) ={biases[ind]:.4f} "
         )
         for vec_id, x_vec in enumerate(coef):
             for elem_id, x_elem in enumerate(x_vec):
@@ -193,10 +193,9 @@ def str_lam_pol_coeffs():
 
 def get_text_results():
     if hasattr(AppState(), "res_lam"):
-        text_1, latex_1 = str_lam_coeffs()
-        text_2, latex_2 = str_lam_pol_coeffs()
-        text_3, latex_3 = str_c_coeffs()
-        text_4, latex_4 = str_a_coeffs()
-        return text_1 + text_2 + text_3 + text_4, latex_1 + latex_2 + latex_3 + latex_4
+        res = tuple(  # TODO revise order
+            zip(str_c_coeffs(), str_a_coeffs(), str_lam_coeffs(), str_lam_pol_coeffs()),
+        )
+        return ["".join(i) for i in res]
     else:
         return "", ""
