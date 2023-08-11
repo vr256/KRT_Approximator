@@ -2,6 +2,7 @@ import os
 
 import customtkinter
 
+from tools.config import H_COEF, W_COEF
 from tools.utils import load_locale
 
 customtkinter.set_appearance_mode("Light")
@@ -16,9 +17,9 @@ class App(customtkinter.CTk):
         # * to avoid circular imports
         from views import (
             Approximator,
+            InfoView,
             InputView,
             MainTabview,
-            MiscView,
             Optimizer,
             PlotSelector,
             PolynomView,
@@ -26,12 +27,21 @@ class App(customtkinter.CTk):
             VectorView,
         )
 
+        global W_COEF, H_COEF
         super().__init__()
         self.loc = load_locale(current_module)
 
         # window
         self.title(self.loc["title"])
-        self.geometry(f"{1400}x{600}")
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        W_COEF = screen_width / 1920
+        H_COEF = screen_height / 1080
+        window_width = int(1400 * W_COEF)
+        window_height = int(600 * H_COEF)
+        x = (screen_width / 2) - (window_width / 2)
+        y = (screen_height / 2) - (window_height / 2)
+        self.geometry(f"{window_width}x{window_height}+{int(x)}+{int(y)}")
         self.resizable(False, False)
 
         # grid layout
@@ -42,25 +52,38 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0, 1, 2), weight=10)
 
         # contents
-        self.sidebar = Sidebar(master=self, width=130, corner_radius=0)
-        self.plot_selector = PlotSelector(master=self, width=300)
-        self.approximator = Approximator(master=self, width=140)
-        self.main_tabview = MainTabview(master=self, width=440)
+        self.sidebar = Sidebar(
+            master=self,
+            width=int(130 * W_COEF),
+            corner_radius=0,
+        )
+        self.plot_selector = PlotSelector(
+            master=self,
+            width=int(300 * W_COEF),
+        )
+        self.approximator = Approximator(
+            master=self,
+            width=int(140 * W_COEF),
+        )
+        self.main_tabview = MainTabview(
+            master=self,
+            width=int(440 * W_COEF),
+        )
         self.optimizer = Optimizer(master=self)
         self.vector_view = VectorView(
             master=self,
             label_text=self.loc["vectorView"],
-            width=95,
+            width=int(95 * W_COEF),
         )
         self.polynom_view = PolynomView(
             master=self,
             label_text=self.loc["polynomView"],
-            width=95,
+            width=int(95 * W_COEF),
         )
-        self.misc_view = MiscView(
+        self.info_view = InfoView(
             master=self,
-            label_text=self.loc["misclView"],
-            width=150,
+            label_text=self.loc["infoView"],
+            width=int(150 * W_COEF),
         )
         self.input_view = InputView(master=self, label_text=self.loc["inputView"])
 
@@ -72,7 +95,7 @@ class App(customtkinter.CTk):
             self.optimizer,
             self.vector_view,
             self.polynom_view,
-            self.misc_view,
+            self.info_view,
             self.input_view,
         )
 
@@ -80,16 +103,10 @@ class App(customtkinter.CTk):
         self.loc = load_locale(current_module)
         self.vector_view.configure(label_text=self.loc["vectorView"])
         self.polynom_view.configure(label_text=self.loc["polynomView"])
-        self.misc_view.configure(label_text=self.loc["misclView"])
+        self.info_view.configure(label_text=self.loc["infoView"])
         self.input_view.configure(label_text=self.loc["inputView"])
         for widget in self.widgets:
             widget.update_locale()
 
     def destroy(self):
-        self.after_cancel(self.after_id)
-        for widget in self.widgets:
-            if hasattr(widget, "after_id"):
-                self.after_cancel(
-                    widget.after_id,
-                )
-        super().destroy()
+        exit()

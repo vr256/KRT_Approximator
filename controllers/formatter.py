@@ -15,39 +15,41 @@ current_module = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def format_txt_input():
-    with open(AppState().input_file, "r") as file:
+    with open(AppState().input_file, "r", encoding="utf-8") as file:
         cur_input = file.read()
     x = {}
     y = {}
     y_dim, x1_dim, x2_dim, x3_dim = AppState().dims
+    try:
+        for block in cur_input.split("\n\n"):
+            if block != "":
+                block = block.replace(" ", "").replace("\t", "").strip("\n")
+                if block[0] in ["X", "x", "Х", "х"]:
+                    if block[2:].split("\n")[0] == "1":
+                        x[int(block[1])] = {}
 
-    for block in cur_input.split("\n\n"):
-        if block != "":
-            block = block.replace(" ", "").replace("\t", "").strip("\n")
-            if block[0] in ["X", "x", "Х", "х"]:
-                if block[2:].split("\n")[0] == "1":
-                    x[int(block[1])] = {}
+                    x[int(block[1])][int(block[2:].split("\n")[0])] = [
+                        float(i.replace(",", ".").strip(" ").strip("\n"))
+                        for i in block.split("\n")[1:]
+                    ]
 
-                x[int(block[1])][int(block[2:].split("\n")[0])] = [
-                    float(i.replace(",", ".").strip(" ").strip("\n"))
-                    for i in block.split("\n")[1:]
-                ]
+                if block[0] in ["Y", "y", "У", "у"]:
+                    y[int(block[1 : 1 + len(str(y_dim))])] = [
+                        float(i.replace(",", ".").strip(" ").strip("\n"))
+                        for i in block.split("\n")[1:]
+                    ]
 
-            if block[0] in ["Y", "y", "У", "у"]:
-                y[int(block[1 : 1 + len(str(y_dim))])] = [
-                    float(i.replace(",", ".").strip(" ").strip("\n"))
-                    for i in block.split("\n")[1:]
-                ]
+        res_x = [[x[key_1][key_2] for key_2 in sorted(x[key_1])] for key_1 in sorted(x)]
+        res_y = [y[key] for key in sorted(y)]
+        assert len(res_y) == y_dim
+        assert len(res_x) == 3
+        assert len(res_x[0]) == x1_dim
+        assert len(res_x[1]) == x2_dim
+        assert len(res_x[2]) == x3_dim
 
-    res_x = [[x[key_1][key_2] for key_2 in sorted(x[key_1])] for key_1 in sorted(x)]
-    res_y = [y[key] for key in sorted(y)]
-    assert len(res_y) == y_dim
-    assert len(res_x) == 3
-    assert len(res_x[0]) == x1_dim
-    assert len(res_x[1]) == x2_dim
-    assert len(res_x[2]) == x3_dim
-
-    return np.array(res_x), np.array(res_y)
+        return np.array(res_x), np.array(res_y)
+    except AssertionError:
+        return -1, -1
 
 
 # printing results
@@ -60,7 +62,7 @@ def str_c_coeffs():
     for r_ind, render in enumerate((loc["text"], loc["latex"])):
         for ind, coef in enumerate(AppState().res_c):
             res = (
-                f"{render['phi']}{ind + 1}{render['end']}  ("
+                f"{render['phi']}{ind + 1}{render['end']}("
                 + ", ".join(
                     [
                         f"{render['x']}{h}{render['end']}"

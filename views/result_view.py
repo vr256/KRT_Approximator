@@ -223,6 +223,7 @@ class PlotSelector(customtkinter.CTkFrame):
 
     def update_latex(self):
         change_latex(self.render_var.get() == "on")
+        self._master.input_view.write_to_file()
         if hasattr(self._master.main_tabview, "latex"):
             self._master.main_tabview.results_textbox.delete("1.0", customtkinter.END)
             self._master.main_tabview.results_textbox.insert(
@@ -265,23 +266,53 @@ class Approximator(customtkinter.CTkFrame):
         self.calculate_y_button.pack(side="bottom", fill="both", expand="yes")
 
     def find_approx(self):
-        degs = [
-            int(self._master.polynom_view.__dict__[f"X{i}_deg"].get())
-            for i in range(1, 3 + 1)
-        ]
-        dims = [
-            int(self._master.vector_view.entry_Y_dim.get()),
-            int(self._master.vector_view.entry_X1_dim.get()),
-            int(self._master.vector_view.entry_X2_dim.get()),
-            int(self._master.vector_view.entry_X3_dim.get()),
-        ]
-        change_pol_degrees(degs)
-        change_dims(dims)
-        (
-            self._master.main_tabview.plain_text,
-            self._master.main_tabview.latex,
-        ) = approximate()
-        self._master.plot_selector.update_latex()
+        AppState().input_file = self._master.input_view.entry_file_input.get()
+        AppState().output_file = self._master.input_view.entry_file_output.get()
+        if AppState().input_file != "":
+            degs = [
+                int(self._master.polynom_view.__dict__[f"entry_X{i}_deg"].get())
+                for i in range(1, AppState().num_x + 1)
+            ]
+            dims = [
+                int(self._master.vector_view.entry_Y_dim.get()),
+                int(self._master.vector_view.entry_X1_dim.get()),
+            ] + [
+                int(self._master.vector_view.__dict__[f"entry_X{i}_dim"].get())
+                for i in range(2, AppState().num_x + 1)
+            ]
+            change_pol_degrees(degs)
+            change_dims(dims)
+            if not os.path.exists(AppState().input_file):
+                self._master.info_view.show_warning(warning="no_such_input_file")
+            else:
+                if AppState().output_file != "" and not os.path.exists(
+                    AppState().output_file,
+                ):
+                    self._master.info_view.show_warning(warning="no_such_output_file")
+                else:
+                    for warning in ["no_such_input_file", "no_such_output_file"]:
+                        self._master.info_view.show_warning(
+                            warning=warning,
+                            destroy=True,
+                        )
+                    p_text, latex = approximate()
+                    if -1 in (p_text, latex):
+                        self._master.info_view.show_warning(warning="wrong_data_format")
+                        self._master.main_tabview.plain_text = ""
+                        self._master.main_tabview.latex = ""
+                    else:
+                        self._master.info_view.show_warning(
+                            warning="wrong_data_format",
+                            destroy=True,
+                        )
+                        self._master.main_tabview.plain_text = p_text
+                        self._master.main_tabview.latex = latex
+
+                    make_plots()
+                    self._master.input_view.write_to_file()
+                    self._master.plot_selector.update_latex()
+        else:
+            self._master.info_view.show_warning(warning="no_input_file")
 
     def update_locale(self):
         self.loc = load_locale(current_module)

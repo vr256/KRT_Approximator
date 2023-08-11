@@ -1,5 +1,6 @@
 import os
 import tkinter
+from functools import partial
 
 import customtkinter
 from PIL import Image
@@ -61,7 +62,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
             image=self.remove_image,
             width=8,
             text="",
-            command=self.remove_vector,
+            command=partial(self.remove_vector, index=0),
             state="disabled",
             fg_color="gray",
         )
@@ -93,7 +94,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
             image=self.remove_image,
             width=8,
             text="",
-            command=self.remove_vector,
+            command=partial(self.remove_vector, index=1),
             state="disabled",
             fg_color="gray",
         )
@@ -135,7 +136,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
                 image=self.remove_image,
                 width=8,
                 text="",
-                command=self.remove_vector,
+                command=partial(self.remove_vector, index=i),
             )
             self.__dict__[f"button_remove_X{i}"].grid(
                 row=2 + i,
@@ -208,7 +209,7 @@ class VectorView(customtkinter.CTkScrollableFrame):
             image=self.remove_image,
             width=8,
             text="",
-            command=self.remove_vector,
+            command=partial(self.remove_vector, index=AppState().num_x),
         )
         self.__dict__[f"button_remove_X{AppState().num_x}"].grid(
             row=2 + AppState().num_x,
@@ -220,8 +221,34 @@ class VectorView(customtkinter.CTkScrollableFrame):
         # Revise polynomial view
         self._master.polynom_view.update_after_add()
 
-    def remove_vector(self):
-        self._master.polynom_view.update_after_remove()
+    def remove_vector(self, index: int):
+        # Removing given vector
+        self.__dict__[f"label_X{index}_dim"].destroy()
+        self.__dict__[f"entry_X{index}_dim"].destroy()
+        self.__dict__[f"button_remove_X{index}"].destroy()
+        # Shifting other vectors
+        for i in range(index, AppState().num_x):
+            self.__dict__[f"label_X{i}_dim"] = self.__dict__[f"label_X{i + 1}_dim"]
+            self.__dict__[f"label_X{i}_dim"].configure(text=self.loc["dim"] + f" X{i}:")
+            self.__dict__[f"label_X{i}_dim"].grid(row=2 + i)
+
+            self.__dict__[f"entry_X{i}_dim"] = self.__dict__[f"entry_X{i + 1}_dim"]
+            self.__dict__[f"entry_X{i}_dim"].grid(row=2 + i)
+
+            self.__dict__[f"button_remove_X{i}"] = self.__dict__[
+                f"button_remove_X{i + 1}"
+            ]
+            self.__dict__[f"button_remove_X{i}"].grid(row=2 + i)
+            self.__dict__[f"button_remove_X{i}"].configure(
+                command=partial(self.remove_vector, index=i),
+            )
+
+        # Removing now-redundant vector
+        self.__dict__.pop(f"label_X{AppState().num_x}_dim")
+        self.__dict__.pop(f"entry_X{AppState().num_x}_dim")
+        self.__dict__.pop(f"button_remove_X{AppState().num_x}")
+        # Revise polynomial view
+        self._master.polynom_view.update_after_remove(index)
 
 
 class PolynomView(customtkinter.CTkScrollableFrame):
@@ -248,7 +275,7 @@ class PolynomView(customtkinter.CTkScrollableFrame):
             self.__dict__[f"X{i}_deg"] = tkinter.StringVar(value="3")
             self.__dict__[f"label_X{i}_deg"] = customtkinter.CTkLabel(
                 self,
-                text=self.loc["pow"] + f" X{i}:",
+                text=self.loc["deg"] + f" X{i}:",
             )
             self.__dict__[f"label_X{i}_deg"].grid(
                 row=1 + i,
@@ -276,18 +303,18 @@ class PolynomView(customtkinter.CTkScrollableFrame):
         selected_pol_index = [e.value for e in Polynomial].index(AppState().pol)
         self.opt_polynom.set(self.loc["polynomials"][selected_pol_index])
         for i in range(1, AppState().num_x + 1):
-            self.__dict__[f"label_X{i}_deg"].configure(text=self.loc["pow"] + f" X{i}:")
+            self.__dict__[f"label_X{i}_deg"].configure(text=self.loc["deg"] + f" X{i}:")
 
     def update_after_add(self):
         self.__dict__[f"X{AppState().num_x}_deg"] = tkinter.StringVar(value="3")
         self.__dict__[f"label_X{AppState().num_x}_deg"] = customtkinter.CTkLabel(
             self,
-            text=self.loc["pow"] + f" X{AppState().num_x}:",
+            text=self.loc["deg"] + f" X{AppState().num_x}:",
         )
         self.__dict__[f"label_X{AppState().num_x}_deg"].grid(
             row=1 + AppState().num_x,
             column=0,
-            padx=(23, 12),
+            padx=(30, 10),
             pady=10,
         )
         self.__dict__[f"entry_X{AppState().num_x}_deg"] = customtkinter.CTkEntry(
@@ -303,24 +330,61 @@ class PolynomView(customtkinter.CTkScrollableFrame):
             sticky="w",
         )
 
-    def update_after_remove(self):
-        pass
+    def update_after_remove(self, index: int):
+        # Removing given vector
+        self.__dict__[f"label_X{index}_deg"].destroy()
+        self.__dict__[f"entry_X{index}_deg"].destroy()
+        # Shifting other vectors
+        for i in range(index, AppState().num_x):
+            self.__dict__[f"label_X{i}_deg"] = self.__dict__[f"label_X{i + 1}_deg"]
+            self.__dict__[f"label_X{i}_deg"].configure(text=self.loc["deg"] + f" X{i}:")
+            self.__dict__[f"label_X{i}_deg"].grid(row=2 + i)
+            self.__dict__[f"entry_X{i}_deg"] = self.__dict__[f"entry_X{i + 1}_deg"]
+            self.__dict__[f"entry_X{i}_deg"].grid(row=2 + i)
+        # Removing now-redundant vector
+        self.__dict__.pop(f"label_X{AppState().num_x}_deg")
+        self.__dict__.pop(f"entry_X{AppState().num_x}_deg")
+        AppState().num_x -= 1
 
 
-class MiscView(customtkinter.CTkScrollableFrame):
+class InfoView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.loc = load_locale(current_module)
+        self.loc = load_locale(current_module)["info"]
         self._scrollbar.configure(width=0)
         self.grid(row=0, column=4, padx=(4, 8), pady=(27, 4), sticky="nsew")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.n_labels = 0
+        self._warnings = ("no_input_file", "no_such_input_file", "no_such_output_file")
 
     def update_locale(self):
-        pass
+        self.loc = load_locale(current_module)["info"]
+        for label in self._warnings:
+            if label in self.__dict__:
+                self.__dict__[label].configure(text=self.loc[label])
+
+    def show_warning(self, warning, destroy=False):
+        if not destroy:
+            if warning not in self.__dict__:
+                self.__dict__[warning] = customtkinter.CTkLabel(
+                    self,
+                    text=self.loc[warning],
+                    text_color=("red", "yellow"),
+                )
+                self.__dict__[warning].grid(row=self.n_labels, column=0)
+                self.n_labels += 1
+                self.rowconfigure(self.n_labels, weight=1)
+        else:
+            if warning in self.__dict__:
+                self.__dict__[warning].destroy()
+                self.__dict__.pop(warning)
 
 
 class InputView(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._master = master
         self.loc = load_locale(current_module)
         self._scrollbar.configure(width=0)
         self.grid(row=1, column=4, padx=(4, 8), pady=(8, 0), sticky="nsew")
@@ -380,22 +444,72 @@ class InputView(customtkinter.CTkScrollableFrame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-    def update_input_file(self):
-        path = customtkinter.filedialog.askopenfilename()
-        self.entry_file_input.delete(0, "end")
-        self.entry_file_input.insert(0, path)
-        change_input_file(path)
-
-    def update_output_file(self):
-        path = customtkinter.filedialog.askopenfilename()
-        self.entry_file_output.delete(0, "end")
-        self.entry_file_output.insert(0, path)
-        change_output_file(path)
-
     def update_locale(self):
         self.loc = load_locale(current_module)
         self.label_input_file.configure(text=self.loc["input_file"])
         self.label_output_file.configure(text=self.loc["output_file"])
+
+    def update_input_file(self):
+        path = customtkinter.filedialog.askopenfilename()
+        if not os.path.exists(path):
+            self._master.info_view.show_warning(warning="no_such_input_file")
+        else:
+            self._master.info_view.show_warning(
+                warning="no_such_input_file",
+                destroy=True,
+            )
+            self.entry_file_input.delete(0, "end")
+            self.entry_file_input.insert(0, path)
+            self._master.info_view.show_warning(warning="no_input_file", destroy=True)
+            self._master.info_view.show_warning(
+                warning="wrong_data_format",
+                destroy=True,
+            )
+            change_input_file(path)
+
+    def update_output_file(self):
+        path = customtkinter.filedialog.askopenfilename()
+        if not os.path.exists(path):
+            self._master.info_view.show_warning(warning="no_such_output_file")
+        else:
+            self._master.info_view.show_warning(
+                warning="no_such_output_file",
+                destroy=True,
+            )
+            self.entry_file_output.delete(0, "end")
+            self.entry_file_output.insert(0, path)
+            self._master.info_view.show_warning(
+                warning="wrong_data_format",
+                destroy=True,
+            )
+            change_output_file(path)
+            self.write_to_file()
+
+    def write_to_file(self):
+        if (
+            hasattr(AppState(), "output_file")
+            and isinstance(
+                AppState().output_file,
+                str,
+            )
+            and hasattr(self._master.main_tabview, "plain_text")
+        ):
+            if AppState().output_file != "" and not os.path.exists(
+                AppState().output_file,
+            ):
+                self._master.info_view.show_warning(warning="no_such_output_file")
+            else:
+                self._master.info_view.show_warning(
+                    warning="no_such_output_file",
+                    destroy=True,
+                )
+                if AppState().output_file != "":
+                    with open(AppState().output_file, "w", encoding="utf-8") as file:
+                        file.write(
+                            self._master.main_tabview.latex
+                            if AppState().latex
+                            else self._master.main_tabview.plain_text,
+                        )
 
 
 class Optimizer(customtkinter.CTkFrame):

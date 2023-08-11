@@ -65,19 +65,22 @@ def make_plots():
 
 
 def approximate():
-    AppState().x_data, AppState().y_true = format_txt_input()
-    (
-        AppState().y_pred,
-        AppState().res_lam,
-        AppState().res_a,
-        AppState().res_c,
-    ) = main_solution(
-        AppState().x_data,
-        AppState().y_true,
-        method=AppState().opt,
-        polynom=AppState().pol,
-        degs=AppState().pol_degrees,
-    )
-    make_plots()
-    plain_text, latex = get_text_results()
-    return plain_text, latex
+    res_x, res_y = format_txt_input()
+    if isinstance(res_x, int) or isinstance(res_y, int):
+        return -1, -1
+    else:
+        AppState().x_data, AppState().y_true = res_x, res_y
+        (
+            AppState().y_pred,
+            AppState().res_lam,
+            AppState().res_a,
+            AppState().res_c,
+        ) = main_solution(
+            AppState().x_data,
+            AppState().y_true,
+            method=AppState().opt,
+            polynom=AppState().pol,
+            degs=AppState().pol_degrees,
+        )
+        plain_text, latex = get_text_results()
+        return plain_text, latex

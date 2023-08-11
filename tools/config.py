@@ -16,6 +16,9 @@ ADD_ICON = "resources/images/add_icon.png"
 REMOVE_ICON = "resources/images/remove_icon.png"
 LOGO_PATH = "resources/images/logo.ico"
 
+W_COEF = None
+H_COEF = None
+
 
 def init_array():
     return np.array([[] for _ in range(4)])
@@ -37,7 +40,7 @@ class AppState:
     # Entry forms
     num_y: int = field(default=4)
     num_x: int = field(default=3)
-    dims: tuple[int] = field(default=(4, 2, 2, 3))
+    dims: tuple[int] = field(default=(4, 2, 2, 2))
     pol_degrees: tuple[int] = field(default=(3, 3, 3))
     input_file: str = field(init=False)
     output_file: str = field(default=None)

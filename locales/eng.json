@@ -3,7 +3,7 @@
         "title": "Hierarchical approximator",
         "vectorView": "Vectors",
         "polynomView": "Polynomials",
-        "misclView": "Miscellaneous",
+        "infoView": "Info",
         "inputView": "Input"
     },
     "result_view": {
@@ -33,10 +33,16 @@
                         "Chebyshev"],
         "dim": "Dimensionality of",
         "pol_kind": "Polynomials:   ",
-        "pow": "Degree of", 
+        "deg": "Degree of", 
         "input_file": "Input data file",
         "output_file": "Output data file",  
-        "warnings": {}  
+        "info": {
+            "no_input_file": "No input file has been chosen",
+            "no_such_input_file": "No such input file",
+            "no_such_output_file": "No such output file",
+            "wrong_data_format": "Badly organized data",
+            "wait": "It may take some time"
+        }  
     },
     "result": {
         "true_label": "True",
