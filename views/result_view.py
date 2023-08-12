@@ -5,13 +5,13 @@ import customtkinter
 from PIL import Image
 
 from controllers import (
-    approximate,
     change_dims,
     change_latex,
     change_locale,
     change_plot,
     change_pol_degrees,
     change_theme,
+    find_approx,
     get_text_results,
     make_plots,
 )
@@ -260,15 +260,18 @@ class Approximator(customtkinter.CTkFrame):
         self.calculate_y_button = customtkinter.CTkButton(
             self,
             text=self.loc["find_approx"],
-            command=self.find_approx,
+            command=self.validate_params,
         )
         self.calculate_y_button.grid(row=0, padx=(35, 10), pady=5, sticky="nsew")
         self.calculate_y_button.pack(side="bottom", fill="both", expand="yes")
 
-    def find_approx(self):
+    def validate_params(self):
         AppState().input_file = self._master.input_view.entry_file_input.get()
         AppState().output_file = self._master.input_view.entry_file_output.get()
-        if AppState().input_file != "":
+        if AppState().input_file == "":
+            self._master.info_view.show_warning(warning="no_input_file")
+        else:
+            self._master.info_view.show_warning(warning="no_input_file", destroy=True)
             degs = [
                 int(self._master.polynom_view.__dict__[f"entry_X{i}_deg"].get())
                 for i in range(1, AppState().num_x + 1)
@@ -282,6 +285,7 @@ class Approximator(customtkinter.CTkFrame):
             ]
             change_pol_degrees(degs)
             change_dims(dims)
+
             if not os.path.exists(AppState().input_file):
                 self._master.info_view.show_warning(warning="no_such_input_file")
             else:
@@ -295,7 +299,8 @@ class Approximator(customtkinter.CTkFrame):
                             warning=warning,
                             destroy=True,
                         )
-                    p_text, latex = approximate()
+
+                    p_text, latex = find_approx()
                     if -1 in (p_text, latex):
                         self._master.info_view.show_warning(warning="wrong_data_format")
                         self._master.main_tabview.plain_text = ""
@@ -311,8 +316,6 @@ class Approximator(customtkinter.CTkFrame):
                     make_plots()
                     self._master.input_view.write_to_file()
                     self._master.plot_selector.update_latex()
-        else:
-            self._master.info_view.show_warning(warning="no_input_file")
 
     def update_locale(self):
         self.loc = load_locale(current_module)

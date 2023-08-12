@@ -8,10 +8,10 @@ from .config import (
 )
 from .formatter import get_text_results
 from .result import (
-    approximate,
     change_latex,
     change_locale,
     change_plot,
     change_theme,
+    find_approx,
     make_plots,
 )

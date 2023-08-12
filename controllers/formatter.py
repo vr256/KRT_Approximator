@@ -11,15 +11,14 @@ from tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
-# TODO arbitrary AppState().num_x and AppState().num_y
-
 
 def format_txt_input():
     with open(AppState().input_file, "r", encoding="utf-8") as file:
         cur_input = file.read()
     x = {}
     y = {}
-    y_dim, x1_dim, x2_dim, x3_dim = AppState().dims
+    y_dim = AppState().dims[0]
+    x_dims = AppState().dims[1:]
     try:
         for block in cur_input.split("\n\n"):
             if block != "":
@@ -41,21 +40,17 @@ def format_txt_input():
 
         res_x = [[x[key_1][key_2] for key_2 in sorted(x[key_1])] for key_1 in sorted(x)]
         res_y = [y[key] for key in sorted(y)]
-        assert len(res_y) == y_dim
-        assert len(res_x) == 3
-        assert len(res_x[0]) == x1_dim
-        assert len(res_x[1]) == x2_dim
-        assert len(res_x[2]) == x3_dim
+        assert len(res_y) == AppState().num_y
+        assert len(res_x) == AppState().num_x
+        for i in range(len(res_x)):
+            assert len(res_x[i]) == x_dims[i]
 
         return np.array(res_x), np.array(res_y)
     except AssertionError:
         return -1, -1
 
 
-# printing results
-
-
-# TODO change name (include hierarchical level)
+# TODO change name (include hierarchical level), e.g. `print`
 def str_c_coeffs():
     loc = load_locale(current_module)
     rendered_res = [loc["coef_matrix"] + " C:\n\n"] * 2

@@ -356,7 +356,12 @@ class InfoView(customtkinter.CTkScrollableFrame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.n_labels = 0
-        self._warnings = ("no_input_file", "no_such_input_file", "no_such_output_file")
+        self._warnings = (
+            "no_input_file",
+            "no_such_input_file",
+            "no_such_output_file",
+            "wrong_data_format",
+        )
 
     def update_locale(self):
         self.loc = load_locale(current_module)["info"]
@@ -451,48 +456,36 @@ class InputView(customtkinter.CTkScrollableFrame):
 
     def update_input_file(self):
         path = customtkinter.filedialog.askopenfilename()
-        if not os.path.exists(path):
-            self._master.info_view.show_warning(warning="no_such_input_file")
-        else:
-            self._master.info_view.show_warning(
-                warning="no_such_input_file",
-                destroy=True,
-            )
+        if os.path.exists(path):
+            for warning in ["no_such_input_file", "no_input_file", "wrong_data_format"]:
+                self._master.info_view.show_warning(
+                    warning=warning,
+                    destroy=True,
+                )
             self.entry_file_input.delete(0, "end")
             self.entry_file_input.insert(0, path)
-            self._master.info_view.show_warning(warning="no_input_file", destroy=True)
-            self._master.info_view.show_warning(
-                warning="wrong_data_format",
-                destroy=True,
-            )
             change_input_file(path)
 
     def update_output_file(self):
         path = customtkinter.filedialog.askopenfilename()
-        if not os.path.exists(path):
-            self._master.info_view.show_warning(warning="no_such_output_file")
-        else:
+        if os.path.exists(path):
             self._master.info_view.show_warning(
                 warning="no_such_output_file",
                 destroy=True,
             )
             self.entry_file_output.delete(0, "end")
             self.entry_file_output.insert(0, path)
-            self._master.info_view.show_warning(
-                warning="wrong_data_format",
-                destroy=True,
-            )
             change_output_file(path)
             self.write_to_file()
 
     def write_to_file(self):
         if (
             hasattr(AppState(), "output_file")
+            and hasattr(self._master.main_tabview, "plain_text")
             and isinstance(
                 AppState().output_file,
                 str,
             )
-            and hasattr(self._master.main_tabview, "plain_text")
         ):
             if AppState().output_file != "" and not os.path.exists(
                 AppState().output_file,

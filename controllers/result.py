@@ -64,7 +64,7 @@ def make_plots():
             fig.savefig(path)
 
 
-def approximate():
+def find_approx():
     res_x, res_y = format_txt_input()
     if isinstance(res_x, int) or isinstance(res_y, int):
         return -1, -1
