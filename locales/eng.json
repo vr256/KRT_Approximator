@@ -40,7 +40,7 @@
             "no_input_file": "No input file has been chosen",
             "no_such_input_file": "No such input file",
             "no_such_output_file": "No such output file",
-            "wrong_data_format": "Badly formatted input data"
+            "wrong_data_format": "Incorrectly formatted input data"
         }  
     },
     "result": {

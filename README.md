@@ -1,12 +1,16 @@
 # Hierarchical approximator
 
 ## How to Run
-It is recommended to set up your virtual environment using **venv** module first, and then follow these steps:
 1. `git clone https://github.com/vr256/hierarchical_approximator.git`
 2. `cd hierarchical_approximator`
-3. `git checkout remotes/origin/master`
-4. Install the required dependencies with   
-   `pip install -r requirements.txt`
-5. Run the project with     
-   `python .`
+   <details open> <summary>Recommended</summary>  
 
+   - Create a virtual environment with `python -m venv .venv`    
+   - Activate the virtual environment with `.venv\Scripts\Activate.ps1` </details>
+
+3. Install the required dependencies with   
+   `pip install -r requirements.txt`
+4. Run the project with     
+   `python __main__.py`
+
+Samples of input files can be found in `resources/samples`

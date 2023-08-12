@@ -21,7 +21,7 @@ def format_txt_input():
     x_dims = AppState().dims[1:]
     try:
         for block in cur_input.split("\n\n"):
-            if block != "":
+            if block != "" and block != "\n":
                 block = block.replace(" ", "").replace("\t", "").strip("\n")
                 if block[0] in ["X", "x", "Х", "х"]:
                     if block[2:].split("\n")[0] == "1":

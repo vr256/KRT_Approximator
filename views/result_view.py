@@ -74,10 +74,6 @@ class Sidebar(customtkinter.CTkFrame):
         )
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=10, pady=(0, 10))
 
-    def switch_locale(self, new_loc: str):
-        change_locale(new_loc)
-        self._master.update_locale()
-
     def update_locale(self):
         self.loc = load_locale(current_module)
         self.logo_label.configure(text=self.loc["header"])
@@ -92,6 +88,10 @@ class Sidebar(customtkinter.CTkFrame):
         self.appearance_mode_optionemenu.configure(values=self.loc["themes"])
         selected_theme_index = [e.value for e in Theme].index(AppState().theme)
         self.appearance_mode_optionemenu.set(self.loc["themes"][selected_theme_index])
+
+    def switch_locale(self, new_loc: str):
+        change_locale(new_loc)
+        self._master.update_locale()
 
 
 class MainTabview(customtkinter.CTkTabview):
@@ -126,16 +126,6 @@ class MainTabview(customtkinter.CTkTabview):
             image=plot_image,
         )
         self.results_plot.pack(side="bottom", fill="both", expand="yes")
-
-    def load_plot(self):
-        """Load plot from file to image object"""
-        make_plots()
-        plot_image = customtkinter.CTkImage(
-            light_image=Image.open(PATH_LIGHT),
-            dark_image=Image.open(PATH_DARK),
-            size=(490, 450),
-        )
-        return plot_image
 
     def update_locale(self):
         selected_tab = self.get()
@@ -172,6 +162,16 @@ class MainTabview(customtkinter.CTkTabview):
         self.set(self.loc["tabs"][selected_tab_name])
         self._master.plot_selector.update_latex()
 
+    def load_plot(self):
+        """Load plot from file to image object"""
+        make_plots()
+        plot_image = customtkinter.CTkImage(
+            light_image=Image.open(PATH_LIGHT),
+            dark_image=Image.open(PATH_DARK),
+            size=(490, 450),
+        )
+        return plot_image
+
 
 class PlotSelector(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -199,7 +199,6 @@ class PlotSelector(customtkinter.CTkFrame):
 
         self.render_var = customtkinter.StringVar(value="off")
 
-        # Replace the checkbox with a switch
         self.latex_switch = customtkinter.CTkSwitch(
             self,
             command=self.update_latex,
@@ -209,6 +208,15 @@ class PlotSelector(customtkinter.CTkFrame):
             offvalue="off",
         )
         self.latex_switch.grid(row=2, column=4, padx=5, pady=5)
+
+    def update_locale(self):
+        self.loc = load_locale(current_module)
+        self.label_y_function_selector.configure(text=self.loc["plot_caption"])
+        (
+            self._master.main_tabview.plain_text,
+            self._master.main_tabview.latex,
+        ) = get_text_results()
+        self.update_latex()
 
     def update_plot(self, new_plot: str):
         self.cur_y.set(new_plot)
@@ -240,16 +248,6 @@ class PlotSelector(customtkinter.CTkFrame):
                 expand="yes",
             )
 
-    def update_locale(self):
-        self.loc = load_locale(current_module)
-        self.label_y_function_selector.configure(text=self.loc["plot_caption"])
-        (
-            self._master.main_tabview.plain_text,
-            self._master.main_tabview.latex,
-        ) = get_text_results()
-        # Change the reference to latex_switch
-        self.update_latex()
-
 
 class Approximator(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -264,6 +262,10 @@ class Approximator(customtkinter.CTkFrame):
         )
         self.calculate_y_button.grid(row=0, padx=(35, 10), pady=5, sticky="nsew")
         self.calculate_y_button.pack(side="bottom", fill="both", expand="yes")
+
+    def update_locale(self):
+        self.loc = load_locale(current_module)
+        self.calculate_y_button.configure(text=self.loc["find_approx"])
 
     def validate_params(self):
         AppState().input_file = self._master.input_view.entry_file_input.get()
@@ -303,8 +305,6 @@ class Approximator(customtkinter.CTkFrame):
                     p_text, latex = find_approx()
                     if -1 in (p_text, latex):
                         self._master.info_view.show_warning(warning="wrong_data_format")
-                        self._master.main_tabview.plain_text = ""
-                        self._master.main_tabview.latex = ""
                     else:
                         self._master.info_view.show_warning(
                             warning="wrong_data_format",
@@ -316,7 +316,3 @@ class Approximator(customtkinter.CTkFrame):
                     make_plots()
                     self._master.input_view.write_to_file()
                     self._master.plot_selector.update_latex()
-
-    def update_locale(self):
-        self.loc = load_locale(current_module)
-        self.calculate_y_button.configure(text=self.loc["find_approx"])
