@@ -355,35 +355,61 @@ class InfoView(customtkinter.CTkScrollableFrame):
         self.grid(row=0, column=4, padx=(4, 8), pady=(27, 4), sticky="nsew")
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.n_labels = 0
+        # warnings frame
         self._warnings = (
             "no_input_file",
             "no_such_input_file",
             "no_such_output_file",
             "wrong_data_format",
+            "wait",
         )
+        self.active_warnings = []
+        for i in range(len(self._warnings)):
+            self.__dict__[f"row_{i}"] = [
+                customtkinter.CTkLabel(
+                    self,
+                    text="",
+                ),
+                "",
+            ]
+            self.__dict__[f"row_{i}"][0].grid(row=i, column=0)
+            self.rowconfigure(i, weight=1)
 
     def update_locale(self):
         self.loc = load_locale(current_module)["info"]
-        for label in self._warnings:
-            if label in self.__dict__:
-                self.__dict__[label].configure(text=self.loc[label])
+        for i in range(len(self._warnings)):
+            warning = self.__dict__[f"row_{i}"][1]
+            if warning:
+                self.__dict__[f"row_{i}"][0].configure(text=self.loc[warning])
 
-    def show_warning(self, warning, destroy=False):
-        if not destroy:
-            if warning not in self.__dict__:
-                self.__dict__[warning] = customtkinter.CTkLabel(
-                    self,
-                    text=self.loc[warning],
-                    text_color=("red", "yellow"),
+    def show_warning(self, warning, colors=("red", "yellow"), disable=False):
+        if not disable:
+            if warning not in self.active_warnings:
+                count = len(self.active_warnings)
+                self.active_warnings.append(warning)
+                self.__dict__[f"row_{count}"][0].configure(
+                    text=self.loc[warning], text_color=colors
                 )
-                self.__dict__[warning].grid(row=self.n_labels, column=0)
-                self.n_labels += 1
-                self.rowconfigure(self.n_labels, weight=1)
+                self.__dict__[f"row_{count}"][1] = warning
         else:
-            if warning in self.__dict__:
-                self.__dict__[warning].destroy()
-                self.__dict__.pop(warning)
+            if warning in self.active_warnings:
+                row_to_remove = self.active_warnings.index(warning)
+                self.active_warnings.remove(warning)
+                self.__dict__[f"row_{row_to_remove}"][0].configure(text="")
+                self.__dict__[f"row_{row_to_remove}"][1] = ""
+                for i in range(len(self.active_warnings) - row_to_remove):
+                    next_row = self.__dict__[f"row_{row_to_remove + i + 1}"][0]
+                    next_warning = self.__dict__[f"row_{row_to_remove + i + 1}"][1]
+                    text = next_row.cget("text")
+                    text_color = next_row.cget("text_color")
+                    self.__dict__[f"row_{row_to_remove + i}"][0].configure(
+                        text=text, text_color=text_color
+                    )
+                    self.__dict__[f"row_{row_to_remove + i}"][1] = next_warning
+
+                for i in range(len(self.active_warnings), len(self._warnings)):
+                    self.__dict__[f"row_{i}"][0].configure(text="")
+                    self.__dict__[f"row_{i}"][1] = ""
 
 
 class InputView(customtkinter.CTkScrollableFrame):
@@ -460,7 +486,7 @@ class InputView(customtkinter.CTkScrollableFrame):
             for warning in ["no_such_input_file", "no_input_file", "wrong_data_format"]:
                 self._master.info_view.show_warning(
                     warning=warning,
-                    destroy=True,
+                    disable=True,
                 )
             self.entry_file_input.delete(0, "end")
             self.entry_file_input.insert(0, path)
@@ -471,7 +497,7 @@ class InputView(customtkinter.CTkScrollableFrame):
         if os.path.exists(path):
             self._master.info_view.show_warning(
                 warning="no_such_output_file",
-                destroy=True,
+                disable=True,
             )
             self.entry_file_output.delete(0, "end")
             self.entry_file_output.insert(0, path)
@@ -494,7 +520,7 @@ class InputView(customtkinter.CTkScrollableFrame):
             else:
                 self._master.info_view.show_warning(
                     warning="no_such_output_file",
-                    destroy=True,
+                    disable=True,
                 )
                 if AppState().output_file != "":
                     with open(AppState().output_file, "w", encoding="utf-8") as file:

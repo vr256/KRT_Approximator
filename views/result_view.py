@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter
 
 import customtkinter
@@ -92,6 +93,12 @@ class Sidebar(customtkinter.CTkFrame):
     def switch_locale(self, new_loc: str):
         change_locale(new_loc)
         self._master.update_locale()
+
+    def block_locale_selector(self):
+        self.locale_optionemenu.configure(state="disabled")
+
+    def unblock_locale_selector(self):
+        self.locale_optionemenu.configure(state="normal")
 
 
 class MainTabview(customtkinter.CTkTabview):
@@ -189,7 +196,7 @@ class PlotSelector(customtkinter.CTkFrame):
         self.plot_y_function_optionmenu = customtkinter.CTkOptionMenu(
             self,
             variable=self.cur_y,
-            values=["Y1", "Y2", "Y3", "Y4"],
+            values=[f"Y{i+1}" for i in range(AppState().num_y)],
             command=self.update_plot,
         )
         self.plot_y_function_optionmenu.grid(row=2, column=2, padx=10, pady=5)
@@ -258,14 +265,17 @@ class Approximator(customtkinter.CTkFrame):
         self.calculate_y_button = customtkinter.CTkButton(
             self,
             text=self.loc["find_approx"],
-            command=self.validate_params,
+            command=self.calculate_results,
         )
-        self.calculate_y_button.grid(row=0, padx=(35, 10), pady=5, sticky="nsew")
         self.calculate_y_button.pack(side="bottom", fill="both", expand="yes")
 
     def update_locale(self):
         self.loc = load_locale(current_module)
         self.calculate_y_button.configure(text=self.loc["find_approx"])
+
+    def calculate_results(self):
+        compute_result_thread = threading.Thread(target=self.validate_params)
+        compute_result_thread.start()
 
     def validate_params(self):
         AppState().input_file = self._master.input_view.entry_file_input.get()
@@ -273,7 +283,7 @@ class Approximator(customtkinter.CTkFrame):
         if AppState().input_file == "":
             self._master.info_view.show_warning(warning="no_input_file")
         else:
-            self._master.info_view.show_warning(warning="no_input_file", destroy=True)
+            self._master.info_view.show_warning(warning="no_input_file", disable=True)
             degs = [
                 int(self._master.polynom_view.__dict__[f"entry_X{i}_deg"].get())
                 for i in range(1, AppState().num_x + 1)
@@ -299,16 +309,33 @@ class Approximator(customtkinter.CTkFrame):
                     for warning in ["no_such_input_file", "no_such_output_file"]:
                         self._master.info_view.show_warning(
                             warning=warning,
-                            destroy=True,
+                            disable=True,
                         )
 
+                    self.calculate_y_button.configure(
+                        state="disabled",
+                    )
+                    self._master.info_view.show_warning(
+                        warning="wait",
+                        colors=("black", "white"),
+                    )
+                    self._master.sidebar.block_locale_selector()
                     p_text, latex = find_approx()
+                    self._master.sidebar.unblock_locale_selector()
+                    self._master.info_view.show_warning(
+                        warning="wait",
+                        disable=True,
+                    )
+                    self.calculate_y_button.configure(
+                        state="normal",
+                    )
+
                     if -1 in (p_text, latex):
                         self._master.info_view.show_warning(warning="wrong_data_format")
                     else:
                         self._master.info_view.show_warning(
                             warning="wrong_data_format",
-                            destroy=True,
+                            disable=True,
                         )
                         self._master.main_tabview.plain_text = p_text
                         self._master.main_tabview.latex = latex

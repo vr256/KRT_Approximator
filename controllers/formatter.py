@@ -106,7 +106,7 @@ def str_a_coeffs():
             total += res + "\n"
         latex += "\n"
 
-    return total + plain_text, total + latex
+    return total + plain_text + "\n", total + latex + "\n"
 
 
 def str_lam_coeffs():
@@ -148,7 +148,7 @@ def str_lam_coeffs():
         res = res.replace("=", "= ").replace("-", "- ").rstrip()
         latex += res + "\n\n"
 
-    return total + plain_text, total + latex
+    return total + plain_text + "\n", total + latex + "\n"
 
 
 def str_lam_pol_coeffs():
@@ -185,13 +185,13 @@ def str_lam_pol_coeffs():
         res = res.replace("=", "= ").replace("-", "- ").rstrip()
         latex += res + "\n\n"
 
-    return total + plain_text, total + latex
+    return total + plain_text + "\n", total + latex + "\n"
 
 
 def get_text_results():
     if hasattr(AppState(), "res_lam"):
         res = tuple(  # TODO revise order
-            zip(str_c_coeffs(), str_a_coeffs(), str_lam_coeffs(), str_lam_pol_coeffs()),
+            zip(str_lam_coeffs(), str_lam_pol_coeffs(), str_c_coeffs(), str_a_coeffs()),
         )
         return ["".join(i) for i in res]
     else:

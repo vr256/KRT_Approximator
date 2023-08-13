@@ -37,10 +37,11 @@
         "input_file": "Input data file",
         "output_file": "Output data file",  
         "info": {
-            "no_input_file": "No input file has been chosen",
+            "no_input_file": "No input file has been selected",
             "no_such_input_file": "No such input file",
             "no_such_output_file": "No such output file",
-            "wrong_data_format": "Incorrectly formatted input data"
+            "wrong_data_format": "Incorrectly formatted input data\nor incorrect vectors dimensions",
+            "wait": "It may take some time"
         }  
     },
     "result": {
@@ -49,9 +50,9 @@
         "mse": "Mean squared error"
     },
     "formatter": {
-        "ort_pol_message": "Functions find_approxd via",
+        "ort_pol_message": "Functions approximated via",
         "possesive_case": "'s polynomials",
-        "conv_pol_message": "Functions find_approxd via ordinary polynomials",
+        "conv_pol_message": "Functions approximated via ordinary polynomials",
         "coef_matrix": "Matrix",
         "text": {
             "phi": "Ф",

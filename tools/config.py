@@ -16,9 +16,6 @@ ADD_ICON = "resources/images/add_icon.png"
 REMOVE_ICON = "resources/images/remove_icon.png"
 LOGO_PATH = "resources/images/logo.ico"
 
-W_COEF = None
-H_COEF = None
-
 
 def init_array():
     return np.array([[] for _ in range(4)])
