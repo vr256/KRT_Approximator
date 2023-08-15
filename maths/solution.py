@@ -146,7 +146,6 @@ class Model(tf.keras.Model):
             if to_print:
                 pass
                 # print(f'Epoch: {epoch + 1}  Loss: {np.round(epoch_loss, 3):.3f}')
-        print()
 
 
 def main_solution(x, y, method=None, polynom=None, weights=None, degs=None):

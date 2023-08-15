@@ -64,23 +64,26 @@ def make_plots():
             fig.savefig(path)
 
 
-def find_approx():
+def read_from_file():
     res_x, res_y = format_txt_input()
     if isinstance(res_x, int) or isinstance(res_y, int):
         return -1, -1
-    else:
-        AppState().x_data, AppState().y_true = res_x, res_y
-        (
-            AppState().y_pred,
-            AppState().res_lam,
-            AppState().res_a,
-            AppState().res_c,
-        ) = main_solution(
-            AppState().x_data,
-            AppState().y_true,
-            method=AppState().opt,
-            polynom=AppState().pol,
-            degs=AppState().pol_degrees,
-        )
-        plain_text, latex = get_text_results()
-        return plain_text, latex
+    return res_x, res_y
+
+
+def find_approx(res_x, res_y):
+    AppState().x_data, AppState().y_true = res_x, res_y
+    (
+        AppState().y_pred,
+        AppState().res_lam,
+        AppState().res_a,
+        AppState().res_c,
+    ) = main_solution(
+        AppState().x_data,
+        AppState().y_true,
+        method=AppState().opt,
+        polynom=AppState().pol,
+        degs=AppState().pol_degrees,
+    )
+    plain_text, latex = get_text_results()
+    return plain_text, latex

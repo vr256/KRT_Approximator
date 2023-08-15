@@ -14,8 +14,11 @@ class App(customtkinter.CTk):
             Approximator,
             InfoView,
             InputView,
+            LatexSwitcher,
             MainTabview,
-            Optimizer,
+            OptimizerLabel,
+            OptimizerMenu,
+            PlotLabel,
             PlotSelector,
             PolynomView,
             Sidebar,
@@ -43,54 +46,46 @@ class App(customtkinter.CTk):
         self.resizable(False, False)
 
         # grid layout
-        self.grid_columnconfigure(1, weight=2)
-        self.grid_columnconfigure(2, weight=3)
-        self.grid_columnconfigure(3, weight=4)
-        self.grid_columnconfigure(4, weight=1)
-        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=2)
+        # self.grid_columnconfigure(3, weight=1)
+        self.grid_columnconfigure(4, weight=2)
+        self.grid_columnconfigure(5, weight=3, minsize=110)
+        self.grid_columnconfigure(6, weight=2, minsize=95)
+        self.grid_rowconfigure((0, 1, 2), weight=2)
+        self.grid_rowconfigure(3, weight=1)
 
         # contents
-        self.sidebar = Sidebar(
-            master=self,
-            width=130,
-            corner_radius=0,
-        )
-        self.plot_selector = PlotSelector(
-            master=self,
-            width=300,
-        )
-        self.approximator = Approximator(
-            master=self,
-            width=140,
-        )
-        self.main_tabview = MainTabview(
-            master=self,
-            width=440,
-        )
-        self.optimizer = Optimizer(master=self)
+        self.sidebar = Sidebar(master=self, width=130, corner_radius=0)
+        self.plot_label = PlotLabel(master=self, width=120, height=20)
+        self.plot_selector = PlotSelector(master=self, height=20, width=100)
+        self.latex_switcher = LatexSwitcher(master=self, width=50, height=20)
+        self.approximator = Approximator(master=self, width=140)
+        self.main_tabview = MainTabview(master=self, width=440)
+        self.optimizer_label = OptimizerLabel(master=self, height=20)
+        self.optimizer_menu = OptimizerMenu(master=self, height=20)
         self.vector_view = VectorView(
-            master=self,
-            label_text=self.loc["vectorView"],
-            width=95,
+            master=self, label_text=self.loc["vectorView"], width=110
         )
         self.polynom_view = PolynomView(
-            master=self,
-            label_text=self.loc["polynomView"],
-            width=95,
+            master=self, label_text=self.loc["polynomView"], width=110
         )
         self.info_view = InfoView(
-            master=self,
-            label_text=self.loc["infoView"],
-            width=150,
+            master=self, label_text=self.loc["infoView"], width=150
         )
-        self.input_view = InputView(master=self, label_text=self.loc["inputView"])
+        self.input_view = InputView(
+            master=self, label_text=self.loc["inputView"], width=150
+        )
 
         self.widgets = (
             self.sidebar,
             self.approximator,
             self.plot_selector,
             self.main_tabview,
-            self.optimizer,
+            self.optimizer_label,
+            self.plot_label,
+            self.latex_switcher,
+            self.optimizer_menu,
             self.vector_view,
             self.polynom_view,
             self.info_view,
@@ -104,7 +99,8 @@ class App(customtkinter.CTk):
         self.info_view.configure(label_text=self.loc["infoView"])
         self.input_view.configure(label_text=self.loc["inputView"])
         for widget in self.widgets:
-            widget.update_locale()
+            if hasattr(widget, "update_locale"):
+                widget.update_locale()
 
     def destroy(self):
-        exit()
+        os._exit(0)

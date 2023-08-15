@@ -1,6 +1,6 @@
 # Hierarchical approximator
 
-## How to Run
+## How to install and run
 1. `git clone https://github.com/vr256/hierarchical_approximator.git`
 2. `cd hierarchical_approximator`
    <details open> <summary>Recommended</summary>  
