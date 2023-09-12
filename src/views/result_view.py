@@ -5,7 +5,7 @@ import tkinter
 import customtkinter
 from PIL import Image
 
-from controllers import (
+from src.controllers import (
     change_dims,
     change_latex,
     change_locale,
@@ -17,9 +17,9 @@ from controllers import (
     make_plots,
     read_from_file,
 )
-from models import Locale, Theme
-from tools.config import PATH_DARK, PATH_LIGHT, AppState
-from tools.utils import load_locale
+from src.model import Locale, Theme
+from src.tools.config import PATH_DARK, PATH_LIGHT, AppState
+from src.tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -177,8 +177,7 @@ class PlotLabel(customtkinter.CTkFrame):
         self.grid(row=3, column=1, sticky="nsew", padx=(7, 0), pady=(12, 10))
 
         self.label_y_function_selector = customtkinter.CTkLabel(
-            self,
-            text=self.loc["plot_caption"],
+            self, text=self.loc["plot_caption"]
         )
         self.label_y_function_selector.grid(row=2, padx=(20, 5), pady=5)
         self.label_y_function_selector.place(relx=0.5, rely=0.5, anchor="center")
@@ -212,9 +211,7 @@ class PlotSelector(customtkinter.CTkFrame):
         plot_image = self._master.main_tabview.load_plot()
         self._master.main_tabview.results_plot.configure(image=plot_image)
         self._master.main_tabview.results_plot.pack(
-            side="bottom",
-            fill="both",
-            expand="yes",
+            side="bottom", fill="both", expand="yes"
         )
 
 
@@ -289,8 +286,11 @@ class Approximator(customtkinter.CTkFrame):
             return -1
 
     def validate_params(self):
+        # TODO Is it possible to rewrite it in a less cumbersome way?
         AppState().input_file = self._master.input_view.entry_file_input.get()
         AppState().output_file = self._master.input_view.entry_file_output.get()
+        num_y = self._master.vector_view.entry_Y_dim.get()
+
         if AppState().input_file == "":
             self._master.info_view.show_warning(warning="no_input_file")
         else:
@@ -304,7 +304,7 @@ class Approximator(customtkinter.CTkFrame):
                     self._master.info_view.show_warning(warning="no_such_input_file")
                 else:
                     if AppState().output_file != "" and not os.path.exists(
-                        AppState().output_file,
+                        AppState().output_file
                     ):
                         self._master.info_view.show_warning(
                             warning="no_such_output_file"
@@ -316,7 +316,7 @@ class Approximator(customtkinter.CTkFrame):
                                 disable=True,
                             )
 
-                        res_x, res_y = read_from_file()
+                        res_x, res_y = read_from_file(num_y)
                         if isinstance(res_x, int) or isinstance(res_y, int):
                             self._master.info_view.show_warning(
                                 warning="wrong_data_format"
@@ -326,23 +326,17 @@ class Approximator(customtkinter.CTkFrame):
                                 warning="wrong_data_format", disable=True
                             )
 
-                            self.calculate_y_button.configure(
-                                state="disabled",
-                            )
+                            self.calculate_y_button.configure(state="disabled")
                             self._master.info_view.show_warning(
-                                warning="wait",
-                                colors=("black", "white"),
+                                warning="wait", colors=("black", "white")
                             )
                             self._master.sidebar.block_locale_selector()
                             p_text, latex = find_approx(res_x, res_y)
                             self._master.sidebar.unblock_locale_selector()
                             self._master.info_view.show_warning(
-                                warning="wait",
-                                disable=True,
+                                warning="wait", disable=True
                             )
-                            self.calculate_y_button.configure(
-                                state="normal",
-                            )
+                            self.calculate_y_button.configure(state="normal")
 
                             self._master.main_tabview.plain_text = p_text
                             self._master.main_tabview.latex = latex
@@ -350,3 +344,10 @@ class Approximator(customtkinter.CTkFrame):
                         make_plots()
                         self._master.input_view.write_to_file()
                         self._master.latex_switcher.update_latex()
+                        plot_image = self._master.main_tabview.load_plot()
+                        self._master.main_tabview.results_plot.configure(
+                            image=plot_image
+                        )
+                        self._master.main_tabview.results_plot.pack(
+                            side="bottom", fill="both", expand="yes"
+                        )

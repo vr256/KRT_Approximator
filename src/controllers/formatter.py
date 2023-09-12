@@ -4,30 +4,35 @@ import re
 
 import numpy as np
 
-from maths.utils import convert_polynomials
-from models import Polynomial
-from tools.config import AppState
-from tools.utils import load_locale
+from models import convert_polynomials
+from src.model import Polynomial
+from src.tools.config import AppState
+from src.tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
 
-def format_txt_input():
+def validate_txt_input():
     with open(AppState().input_file, "r", encoding="utf-8") as file:
         cur_input = file.read()
+
     x = {}
     y = {}
     y_dim = AppState().dims[0]
     x_dims = AppState().dims[1:]
+
     try:
         for block in cur_input.split("\n\n"):
-            if block != "" and block != "\n":
+            if block != "" and block != "\n" and len(block) >= 5:
                 block = block.replace(" ", "").replace("\t", "").strip("\n")
                 if block[0] in ["X", "x", "Х", "х"]:
-                    if block[2:].split("\n")[0] == "1":
-                        x[int(block[1])] = {}
+                    dim_ind = block.find("_")
+                    if block[dim_ind + 1 :].split("\n")[0] == "1":
+                        x[int(block[1:dim_ind])] = {}
 
-                    x[int(block[1])][int(block[2:].split("\n")[0])] = [
+                    x[int(block[1:dim_ind])][
+                        int(block[dim_ind + 1 :].split("\n")[0])
+                    ] = [
                         float(i.replace(",", ".").strip(" ").strip("\n"))
                         for i in block.split("\n")[1:]
                     ]
@@ -39,13 +44,14 @@ def format_txt_input():
                     ]
 
         res_x = [[x[key_1][key_2] for key_2 in sorted(x[key_1])] for key_1 in sorted(x)]
+
         res_y = [y[key] for key in sorted(y)]
         assert len(res_y) == AppState().num_y
         assert len(res_x) == AppState().num_x
         for i in range(len(res_x)):
             assert len(res_x[i]) == x_dims[i]
-
-        return np.array(res_x), np.array(res_y)
+        # res_x may be inhomogeneous
+        return res_x, np.array(res_y)
     except AssertionError:
         return -1, -1
 
@@ -191,7 +197,7 @@ def str_lam_pol_coeffs():
 def get_text_results():
     if hasattr(AppState(), "res_lam"):
         res = tuple(  # TODO revise order
-            zip(str_lam_coeffs(), str_lam_pol_coeffs(), str_c_coeffs(), str_a_coeffs()),
+            zip(str_lam_coeffs(), str_lam_pol_coeffs(), str_c_coeffs(), str_a_coeffs())
         )
         return ["".join(i) for i in res]
     else:

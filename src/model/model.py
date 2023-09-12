@@ -10,8 +10,8 @@ from numpy.polynomial.legendre import Legendre, leg2poly
 
 
 class Locale(Enum):
-    ENG = "locales/eng.json"
-    UKR = "locales/ukr.json"
+    ENG = "src/locales/eng.json"
+    UKR = "src/locales/ukr.json"
 
     def translate(option: str):
         match option:

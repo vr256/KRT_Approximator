@@ -2,7 +2,7 @@ import os
 
 import customtkinter
 
-from tools.utils import load_locale
+from src.tools.utils import load_locale
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -10,7 +10,7 @@ current_module = os.path.splitext(os.path.basename(__file__))[0]
 class App(customtkinter.CTk):
     def __init__(self):
         # * to avoid circular imports
-        from views import (
+        from src.views import (
             Approximator,
             InfoView,
             InputView,
@@ -28,7 +28,7 @@ class App(customtkinter.CTk):
         super().__init__()
         self.loc = load_locale(current_module)
 
-        # window
+        # window settings
         self.title(self.loc["title"])
         self.tk.call("tk", "scaling", 1)
         customtkinter.set_widget_scaling(1)
@@ -48,6 +48,7 @@ class App(customtkinter.CTk):
         # grid layout
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=2)
+
         # self.grid_columnconfigure(3, weight=1)
         self.grid_columnconfigure(4, weight=2)
         self.grid_columnconfigure(5, weight=3, minsize=110)

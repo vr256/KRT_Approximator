@@ -4,12 +4,12 @@ import customtkinter
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error as mse
 
-from maths import main_solution
-from models import Locale, Theme
-from tools.config import PATH_DARK, PATH_LIGHT, AppState
-from tools.utils import load_locale
+from models import run
+from src.model import Locale, Theme
+from src.tools.config import PATH_DARK, PATH_LIGHT, AppState
+from src.tools.utils import load_locale
 
-from .formatter import format_txt_input, get_text_results
+from .formatter import get_text_results, validate_txt_input
 
 current_module = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -46,14 +46,15 @@ def make_plots():
             fig, ax = plt.subplots(1, 1)
             ax.plot(range(1, len(y_true) + 1), y_true, label=loc["true_label"])
             ax.plot(range(1, len(y_pred) + 1), y_pred, label=loc["approx_label"])
-            loss = mse(
-                y_true if y_true.shape[0] else [0],
-                y_pred if y_pred.shape[0] else [0],
-            )
-            ax.set_title(
-                loc["mse"] + f" {loss:.3f}",
-                y=1.04,
-            )
+            try:
+                loss = mse(
+                    y_true if y_true.shape[0] else [0],
+                    y_pred if y_pred.shape[0] else [0],
+                )
+            except ValueError:
+                loss = 0.0
+
+            ax.set_title(loc["mse"] + f" {loss:.3f}", y=1.04)
             ax.legend(
                 loc="upper center",
                 bbox_to_anchor=(0.5, 1.05),
@@ -64,11 +65,19 @@ def make_plots():
             fig.savefig(path)
 
 
-def read_from_file():
-    res_x, res_y = format_txt_input()
-    if isinstance(res_x, int) or isinstance(res_y, int):
+def read_from_file(num_y):
+    try:
+        is_positive = int(num_y) > 0
+    except ValueError:
         return -1, -1
-    return res_x, res_y
+    else:
+        if not is_positive:
+            return -1, -1
+        AppState().num_y = int(num_y)
+        res_x, res_y = validate_txt_input()
+        if isinstance(res_x, int) or isinstance(res_y, int):
+            return -1, -1
+        return res_x, res_y
 
 
 def find_approx(res_x, res_y):
@@ -78,7 +87,7 @@ def find_approx(res_x, res_y):
         AppState().res_lam,
         AppState().res_a,
         AppState().res_c,
-    ) = main_solution(
+    ) = run(
         AppState().x_data,
         AppState().y_true,
         method=AppState().opt,
