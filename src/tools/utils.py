@@ -15,9 +15,9 @@ def singleton(cls):
     return wrapper
 
 
-def load_locale(path):
+def load_locale(path: str):
     # * to avoid circular imports
-    from tools.config import AppState
+    from src.tools.config import AppState
 
     with open(AppState().lang, "r", encoding="utf-8") as file:
         loc = json.load(file)[path]

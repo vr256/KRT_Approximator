@@ -1,5 +1,5 @@
-from models import Optimizer, Polynomial
-from tools.config import AppState
+from src.model import Optimizer, Polynomial
+from src.tools.config import AppState
 
 
 def change_input_file(path: str):

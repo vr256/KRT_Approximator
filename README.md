@@ -1,4 +1,5 @@
 # Hierarchical approximator
+Samples of input files can be found in `resources/samples`
 
 ## How to install and run
 1. `git clone https://github.com/vr256/hierarchical_approximator.git`
@@ -12,5 +13,3 @@
    `pip install -r requirements.txt`
 4. Run the project with     
    `python __main__.py`
-
-Samples of input files can be found in `resources/samples`
