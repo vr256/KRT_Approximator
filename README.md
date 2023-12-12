@@ -26,7 +26,7 @@ This way, under the assumption of linear independence of feature vectors, one ca
 It is worth noting that the additive representation requires much less terms than Kolmogorov representation provides ($2n+1$), therefore the following coefficients should be equal to $0$: 
 ```math
 \displaylines{ c_{q} = 0 \quad \forall q \in \{ N+1, \space \dots, \space 2n + 1 \} \\
-a_{q, p} = 0 \quad \forall p \notin \{ n_{q_{(-1)} + 1, \space \dots, \space n_{q}} \} }
+a_{q, p} = 0 \quad \forall p \notin \{ n_{q_{(-1)} + 1}, \space \dots, \space n_{q} \} }
 ```
 Here:
 - $N$ is the total number of vector groups, which are used only for convenience as often some vectors share certain *physical* bounds, 
