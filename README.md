@@ -1,4 +1,4 @@
-# Hierarchical approximator
+# KAN approximator
 Samples of input files can be found in `resources/samples`
 
 ## Applying KRT for function approximation
