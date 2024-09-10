@@ -33,5 +33,5 @@ Here:
 - $n_{q}$ is the index of last vector of a group $q$, that is, a group $q$ contains such vectors $x_{i}$ that $i \in \{ n_{q_{(-1)} + 1}, \space n_{q_{(-1)} + 2}, \space \dots, \space n_{q} \}$
 
 ## App
-This application enables to approximate Kolmogorov representation of a hypothesis function from data. It has a graphical user interface (GUI), developed with customtkinter. The application also enables to select from various gradient descent optimizers (Adam, RMSprop, AdaGrad, etc), and it supports two languages (English and Ukrainian) and color themes (light and dark).
+This application enables to approximate Kolmogorov representation of a hypothesis function from data. It has a graphical user interface (GUI), developed with customtkinter. The application also enables to select from various gradient descent optimizers (Adam, RMSprop, AdaGrad, etc), and supports two languages (English and Ukrainian) as well as two color themes (light and dark).
 ![gif not found](src/resources/run.gif)
