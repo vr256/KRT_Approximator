@@ -1,8 +1,8 @@
-# KAN approximator
+# KRT approximator
 Samples of input files can be found in `resources/samples`
 
 ## Applying KRT for function approximation
-This application exploits KRT ([Kolmogorov representation theorem](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Arnold_representation_theorem)), and constructs certain representations (currently only additive ones are supported) which, in turn, approximate certain dependencies of input data given. Feature vectors $x_1, \dots, x_n$ are grouped into sets of such vectors $X_{1}, \dots, X_{N}$. Several target vectors $y_{1}, \dots, y_{m}$ are supported. 
+This application exploits KRT ([Kolmogorov Representation Theorem](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Arnold_representation_theorem)), and constructs certain representations (currently only additive ones are supported) which, in turn, approximate certain dependencies of input data given. Feature vectors $x_1, \dots, x_n$ are grouped into sets of such vectors $X_{1}, \dots, X_{N}$. Several target vectors $y_{1}, \dots, y_{m}$ are supported. 
 
 ### Additive model
 Kolmogorov representation of a hypothesis function $f(x_{1}, \dots, x_{n})$ can be written using an additive hierarchical representation as:
